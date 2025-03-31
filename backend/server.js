@@ -1,3 +1,4 @@
+
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -20,13 +21,15 @@ const startOllama = () => {
   });
 };
 
-// Check if Ollama is running
+// Check if Ollama is running properly
 const checkOllama = async () => {
   try {
-    await axios.get("http://localhost:11434/api/generate");
-    console.log("Ollama is already running.");
+    const response = await axios.get("http://localhost:11434/api/tags");
+    if (response.status === 200) {
+      console.log("✅ Ollama is already running.");
+    }
   } catch (error) {
-    console.log("Ollama is not running. Starting it now...");
+    console.log("❌ Ollama is not running. Starting it now...");
     startOllama();
   }
 };
@@ -38,7 +41,7 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3.2:3b", // Use your preferred model
+      model: "llama3", // Use your preferred model
       prompt: userMessage,
       stream: false,
     });
@@ -46,10 +49,10 @@ app.post("/chat", async (req, res) => {
     const botReply = response.data.response;
     res.json({ reply: botReply });
   } catch (error) {
-    console.error("Ollama API error:", error);
+    console.error("Ollama API error:", error.message);
     res.status(500).json({ reply: "Sorry, I'm having trouble responding right now." });
   }
 });
 
 const PORT = 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
