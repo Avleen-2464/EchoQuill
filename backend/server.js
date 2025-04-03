@@ -41,9 +41,12 @@ app.post("/chat", async (req, res) => {
 
   try {
     const response = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3.2:3b", // Use your preferred model
+      model: "llama3.2-friend", // Use your preferred model
       prompt: userMessage,
       stream: false,
+      options: {
+    "max_tokens": 50
+  }
     });
 
     const botReply = response.data.response;
