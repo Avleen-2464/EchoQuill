@@ -1,12 +1,36 @@
-
-const express = require("express");
-const cors = require("cors");
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
 const axios = require("axios");
 const { exec } = require("child_process");
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'x-auth-token']
+}));
+
+// Middleware
 app.use(express.json());
+
+// Debug logs for routes
+console.log('Loading routes...');
+const authRoutes = require('./routes/authRoutes');
+console.log('Auth routes loaded:', typeof authRoutes);
+const chatRoutes = require('./routes/chatRoutes');
+console.log('Chat routes loaded:', typeof chatRoutes);
+const journalRoutes = require('./routes/journalRoutes');
+console.log('Journal routes loaded:', typeof journalRoutes);
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('MongoDB Connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 const startOllama = () => {
   exec("ollama serve", (error, stdout, stderr) => {
@@ -36,26 +60,19 @@ const checkOllama = async () => {
 
 checkOllama();
 
-app.post("/chat", async (req, res) => {
-  const userMessage = req.body.message;
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/journals', journalRoutes);
 
-  try {
-    const response = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3.2-friend", // Use your preferred model
-      prompt: userMessage,
-      stream: false,
-      options: {
-    "max_tokens": 50
-  }
-    });
-
-    const botReply = response.data.response;
-    res.json({ reply: botReply });
-  } catch (error) {
-    console.error("Ollama API error:", error.message);
-    res.status(500).json({ reply: "Sorry, I'm having trouble responding right now." });
-  }
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error('Server error:', err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log(`API available at http://localhost:${PORT}`);
+});
