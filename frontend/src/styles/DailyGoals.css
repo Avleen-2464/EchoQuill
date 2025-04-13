@@ -1,0 +1,65 @@
+.dailygoals-container {
+    background: var(--goals-bg);
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px var(--shadow-color);
+  }
+  
+  .dailygoals-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+  }
+  
+  .dailygoals-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .dailygoals-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+  }
+  
+  .dailygoals-list-item:hover {
+    background: var(--accent-primary);
+    color: white;
+    box-shadow: 0 4px 8px var(--shadow-color);
+  }
+  
+  .dailygoals-list-item .goal-name {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+  
+  .dailygoals-list-item .goal-status {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+  
+  .dailygoals-add-button {
+    padding: 12px;
+    background: var(--accent-primary);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+  }
+  
+  .dailygoals-add-button:hover {
+    background: var(--accent-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--shadow-color);
+  }
+  

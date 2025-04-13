@@ -1,0 +1,99 @@
+/* Navbar Styles */
+.navbar {
+    background-color: var(--navbar-bg);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+  }
+  
+  .navbar.light {
+    background-color: var(--navbar-bg);
+  }
+  
+  .navbar.dark {
+    background-color: var(--navbar-bg);
+  }
+  
+  .navbar-brand {
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-item {
+    color: var(--navbar-text);
+    text-decoration: none;
+    margin: 0 15px;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .navbar-item:hover {
+    color: var(--accent-primary);
+  }
+  
+  .navbar-item.active {
+    color: var(--accent-primary);
+  }
+  
+  .navbar-menu {
+    display: flex;
+    align-items: center;
+  }
+  
+  .navbar-end {
+    display: flex;
+    align-items: center;
+  }
+  
+  .theme-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--navbar-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    margin-right: 20px;
+  }
+  
+  .theme-toggle-btn:hover {
+    color: var(--accent-primary);
+  }
+  
+  .theme-toggle-btn:focus {
+    outline: none;
+  }
+  
+  .theme-toggle-btn:active {
+    color: var(--accent-primary);
+  }
+  
+  .navbar-item {
+    font-weight: 500;
+  }
+  
+  .navbar-item:last-child {
+    margin-right: 0;
+  }
+  
+  /* Responsive Styles for Mobile View */
+  @media (max-width: 768px) {
+    .navbar-menu {
+      flex-direction: column;
+      margin-top: 10px;
+      background-color: var(--bg-primary);
+      width: 100%;
+      padding: 20px 0;
+    }
+  
+    .navbar-item {
+      margin: 10px 0;
+    }
+  
+    .navbar-end {
+      margin-top: 20px;
+    }
+  }
+  

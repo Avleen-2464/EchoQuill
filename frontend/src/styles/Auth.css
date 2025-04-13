@@ -4,11 +4,19 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #fffcfa 0%, #fff5f6 100%);
+  background-size: 200% 200%;
+  animation: backgroundMove 10s ease infinite;
   padding: 20px;
 }
 
+@keyframes backgroundMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .auth-card {
-  background: #fffcfa;
+  background: #fff;
   padding: 40px;
   border-radius: 20px;
   box-shadow: 0 10px 30px rgba(50, 5, 38, 0.1);
@@ -16,6 +24,12 @@
   max-width: 400px;
   position: relative;
   overflow: hidden;
+  animation: slideUp 0.8s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .auth-card::before {
@@ -66,18 +80,18 @@
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.3s ease;
-  background: #fffcfa;
+  background: #fff;
 }
 
 .form-group input:focus {
   outline: none;
   border-color: #04aaac;
-  box-shadow: 0 0 0 3px rgba(4, 170, 172, 0.1);
+  box-shadow: 0 0 0 3px rgba(4, 170, 172, 0.2);
 }
 
 .auth-button {
   background: linear-gradient(135deg, #04aaac 0%, #039a9c 100%);
-  color: #fffcfa;
+  color: #fff;
   padding: 14px;
   border: none;
   border-radius: 10px;
@@ -86,6 +100,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   margin-top: 10px;
+  will-change: transform;
 }
 
 .auth-button:hover {
@@ -93,8 +108,12 @@
   box-shadow: 0 6px 12px rgba(4, 170, 172, 0.2);
 }
 
+.auth-button:active {
+  transform: scale(0.98);
+}
+
 .auth-button:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
@@ -102,13 +121,14 @@
 
 .auth-error {
   background: #fff5f6;
-  color: #320526;
+  color: #e74c3c;
   padding: 12px;
   border-radius: 10px;
   margin-bottom: 20px;
   text-align: center;
   font-size: 0.9rem;
-  border: 1px solid rgba(50, 5, 38, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.2);
+  transition: all 0.3s ease-in-out;
 }
 
 .auth-switch {
@@ -141,4 +161,4 @@
   .auth-subtitle {
     font-size: 1rem;
   }
-} 
+}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Auth.css';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -11,30 +11,38 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const { email, password } = formData;
 
-  const handleSubmit = async (e) => {
+  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async e => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/login', formData);
-      
-      // Store token and user data in localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Redirect to main app
-      navigate('/app');
+      console.log('Attempting login with email:', email);
+      const res = await axios.post('http://localhost:5000/api/auth/login', {
+        email: email.toLowerCase().trim(),
+        password
+      });
+
+      console.log('Login response:', res.data);
+
+      if (res.data.token && res.data.user) {
+        await login(res.data);
+        console.log('Login successful, navigating to dashboard...');
+        navigate('/', { replace: true });
+      } else {
+        console.error('Invalid response format:', res.data);
+        setError('Invalid response from server');
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during login');
+      console.error('Login error:', err.response?.data);
+      const errorMessage = err.response?.data?.message || 'Failed to login. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -45,36 +53,42 @@ const Login = () => {
       <div className="auth-card">
         <h2>Welcome Back</h2>
         <p className="auth-subtitle">Sign in to continue your journaling journey</p>
-        
-        {error && <div className="auth-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
+
+        {error && (
+          <div className="auth-error">
+            <p>{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input
               type="email"
               id="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={onChange}
               required
               placeholder="Enter your email"
+              autoComplete="email"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={onChange}
               required
               placeholder="Enter your password"
+              autoComplete="current-password"
             />
           </div>
-          
+
           <button 
             type="submit" 
             className="auth-button"
@@ -83,7 +97,7 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        
+
         <p className="auth-switch">
           Don't have an account?{' '}
           <a href="/register">Sign up</a>

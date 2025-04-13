@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import './Auth.css';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -13,47 +13,48 @@ const Register = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
+  const { username, email, password, confirmPassword } = formData;
 
-  const handleSubmit = async (e) => {
+  const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = async e => {
     e.preventDefault();
     setError('');
 
-    // Validate passwords match
-    if (formData.password !== formData.confirmPassword) {
+    if (password !== confirmPassword) {
       setError('Passwords do not match');
-      return;
-    }
-
-    // Validate password strength
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/auth/register', {
-        username: formData.username,
-        email: formData.email,
-        password: formData.password
+      // Register the user
+      const registerRes = await axios.post('http://localhost:5000/api/auth/register', {
+        username,
+        email,
+        password
       });
-      
-      // Store token and user data in localStorage
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      // Redirect to main app
-      navigate('/app');
+
+      console.log('Registration successful:', registerRes.data);
+
+      // Automatically log in after registration
+      const loginRes = await axios.post('http://localhost:5000/api/auth/login', {
+        email,
+        password
+      });
+
+      // Use the login function from AuthContext
+      await login(loginRes.data);
+
+      // Navigate to dashboard
+      navigate('/');
     } catch (err) {
-      setError(err.response?.data?.message || 'An error occurred during registration');
+      console.error('Registration error:', err);
+      const errorMessage = err.response?.data?.message || 'Registration failed. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -64,18 +65,22 @@ const Register = () => {
       <div className="auth-card">
         <h2>Create Account</h2>
         <p className="auth-subtitle">Start your journaling journey today</p>
-        
-        {error && <div className="auth-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
+
+        {error && (
+          <div className="auth-error">
+            <p>{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={onSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="username">Username</label>
             <input
               type="text"
               id="username"
               name="username"
-              value={formData.username}
-              onChange={handleChange}
+              value={username}
+              onChange={onChange}
               required
               placeholder="Choose a username"
             />
@@ -87,23 +92,24 @@ const Register = () => {
               type="email"
               id="email"
               name="email"
-              value={formData.email}
-              onChange={handleChange}
+              value={email}
+              onChange={onChange}
               required
               placeholder="Enter your email"
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
               name="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={onChange}
               required
               placeholder="Create a password"
+              minLength="6"
             />
           </div>
 
@@ -113,13 +119,14 @@ const Register = () => {
               type="password"
               id="confirmPassword"
               name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
+              value={confirmPassword}
+              onChange={onChange}
               required
               placeholder="Confirm your password"
+              minLength="6"
             />
           </div>
-          
+
           <button 
             type="submit" 
             className="auth-button"
@@ -128,7 +135,7 @@ const Register = () => {
             {loading ? 'Creating Account...' : 'Create Account'}
           </button>
         </form>
-        
+
         <p className="auth-switch">
           Already have an account?{' '}
           <a href="/login">Sign in</a>
@@ -138,4 +145,4 @@ const Register = () => {
   );
 };
 
-export default Register; 
+export default Register;

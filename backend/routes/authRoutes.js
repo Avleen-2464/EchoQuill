@@ -4,6 +4,13 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 
+// @route   GET api/auth/test
+// @desc    Test auth route
+// @access  Public
+router.get('/test', (req, res) => {
+  res.json({ message: 'Auth route is working' });
+});
+
 // @route   POST api/auth/register
 // @desc    Register a user
 // @access  Public
