@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -10,10 +10,25 @@ const Login = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [serverStatus, setServerStatus] = useState('checking');
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const { email, password } = formData;
+
+  // Check if server is running
+  useEffect(() => {
+    const checkServer = async () => {
+      try {
+        await axios.get('http://localhost:5000/api/auth/test');
+        setServerStatus('running');
+      } catch (err) {
+        setServerStatus('not-running');
+        setError('Cannot connect to server. Please make sure the backend server is running.');
+      }
+    };
+    checkServer();
+  }, []);
 
   const onChange = e => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -23,25 +38,24 @@ const Login = () => {
     setLoading(true);
 
     try {
-      console.log('Attempting login with email:', email);
-      const res = await axios.post('http://localhost:5000/api/auth/login', {
-        email: email.toLowerCase().trim(),
-        password
-      });
-
+      console.log('Attempting login with:', { email });
+      
+      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      
       console.log('Login response:', res.data);
-
-      if (res.data.token && res.data.user) {
-        await login(res.data);
-        console.log('Login successful, navigating to dashboard...');
-        navigate('/', { replace: true });
-      } else {
-        console.error('Invalid response format:', res.data);
-        setError('Invalid response from server');
-      }
+      
+      // Use the login function from AuthContext
+      await login(res.data);
+      
+      // Navigate to home page (which will show dashboard if authenticated)
+      navigate('/');
     } catch (err) {
-      console.error('Login error:', err.response?.data);
-      const errorMessage = err.response?.data?.message || 'Failed to login. Please try again.';
+      console.error('Login error full details:', err);
+      
+      const errorMessage = err.response?.data?.detail || 
+                          err.response?.data?.message || 
+                          'Unable to connect to server. Please try again.';
+      
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -53,13 +67,27 @@ const Login = () => {
       <div className="auth-card">
         <h2>Welcome Back</h2>
         <p className="auth-subtitle">Sign in to continue your journaling journey</p>
-
+        
+        {serverStatus === 'not-running' && (
+          <div className="auth-error">
+            <p>Server Connection Error</p>
+            <p className="error-help">
+              Please make sure the backend server is running at http://localhost:5000
+            </p>
+          </div>
+        )}
+        
         {error && (
           <div className="auth-error">
             <p>{error}</p>
+            {error.includes('No account found') && (
+              <p className="error-help">
+                Please check your email address or <a href="/register">create a new account</a>
+              </p>
+            )}
           </div>
         )}
-
+        
         <form onSubmit={onSubmit} className="auth-form">
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -72,9 +100,10 @@ const Login = () => {
               required
               placeholder="Enter your email"
               autoComplete="email"
+              disabled={serverStatus === 'not-running'}
             />
           </div>
-
+          
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -86,18 +115,19 @@ const Login = () => {
               required
               placeholder="Enter your password"
               autoComplete="current-password"
+              disabled={serverStatus === 'not-running'}
             />
           </div>
-
+          
           <button 
             type="submit" 
             className="auth-button"
-            disabled={loading}
+            disabled={loading || serverStatus === 'not-running'}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
+        
         <p className="auth-switch">
           Don't have an account?{' '}
           <a href="/register">Sign up</a>

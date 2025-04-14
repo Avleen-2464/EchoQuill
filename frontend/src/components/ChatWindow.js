@@ -22,12 +22,31 @@ const ChatWindow = ({ theme }) => {
     const userMessage = { text: input, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
+    // setIsTyping(true);
+
+    // try {
+    //   const token = localStorage.getItem('token');
+    //   console.log(token);
+    //   const response = await axios.post('http://localhost:5000/api/chat', {
+    //     message: input,
+    //   }, {headers: {"x-auth-token": token}});
+    //   setIsTyping(false);
+    //   const botMessage = { text: response.data.reply, sender: 'bot' };
+    //   setMessages(prev => [...prev, botMessage]);
+    // } catch (error) {
+    //   console.error('Error sending message:', error);
+    //   setIsTyping(false);
+    //   const errorMessage = { text: 'Sorry, there was an error processing your message.', sender: 'bot' };
+    //   setMessages(prev => [...prev, errorMessage]);
+    // }
     setIsTyping(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/chat', {
+      const token = localStorage.getItem('token'); // Verify this key matches where you store the token.
+      console.log(token);
+      const response = await axios.post('http://localhost:5000/api/chat', {
         message: input,
-      });
+      }, {headers: {"x-auth-token": token}});
       setIsTyping(false);
       const botMessage = { text: response.data.reply, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);

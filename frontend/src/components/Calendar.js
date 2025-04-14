@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 
-// Calendar component
 const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => {
+  // Default to current date if currentDate is undefined
+  const current = currentDate || new Date();
+
   // Function to navigate to the previous or next month
   const navigateMonth = (direction) => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + direction, 1));
+    setCurrentDate(new Date(current.getFullYear(), current.getMonth() + direction, 1));
   };
 
   // Function to go to the current month
@@ -14,25 +16,32 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
 
   // Function to render the calendar grid
   const renderCalendar = () => {
-    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const firstDay = new Date(current.getFullYear(), current.getMonth(), 1);
+    const lastDay = new Date(current.getFullYear(), current.getMonth() + 1, 0);
     const days = [];
-
+  
+    // Default values for journalEntries and chatDays
+    const safeJournalEntries = journalEntries || []; // Default to empty array
+    const safeChatDays = chatDays || new Set(); // Default to empty Set
+  
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDay.getDay(); i++) {
       days.push(<div key={`empty-${i}`} className="calendar-day empty"></div>);
     }
-
+  
     // Add days of the month
     for (let i = 1; i <= lastDay.getDate(); i++) {
-      const date = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
-      const hasJournal = journalEntries.some(entry => {
+      const date = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      
+      const hasJournal = safeJournalEntries.some(entry => {
         // Parse the journal entry date (e.g., "March 31, 2024")
         const entryDate = new Date(entry.date);
         const entryDateStr = `${entryDate.getFullYear()}-${String(entryDate.getMonth() + 1).padStart(2, '0')}-${String(entryDate.getDate()).padStart(2, '0')}`;
         return entryDateStr === date;
       });
-      const hasChat = chatDays.has(date);
+  
+      const hasChat = safeChatDays.has(date);
+      
       days.push(
         <div 
           key={i} 
@@ -48,17 +57,20 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
           )}
         </div>
       );
-    }
+      console.log('Journal Entries:', journalEntries);
+console.log('Chat Days:', chatDays);
 
+    }
+  
     return days;
   };
-
+  
   return (
     <div className="calendar">
       <div className="calendar-header">
         <button onClick={() => navigateMonth(-1)}>Previous</button>
         <div className="calendar-month">
-          {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+          {current.toLocaleString('default', { month: 'long', year: 'numeric' })}
         </div>
         <button onClick={() => navigateMonth(1)}>Next</button>
         <button onClick={goToCurrentMonth}>Current Month</button>
@@ -69,5 +81,4 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
     </div>
   );
 };
-
 export default Calendar;
