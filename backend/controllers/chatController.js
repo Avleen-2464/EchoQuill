@@ -1,3 +1,4 @@
+const Message = require('../models/Message');
 const axios = require('axios');
 
 const handleChat = async (req, res) => {
@@ -23,6 +24,21 @@ const handleChat = async (req, res) => {
         });
 
         const botReply = response.data.response;
+
+    
+        Message.create({
+            userId: req.user.id,
+            conversationId: req.body.conversationId,
+            sender: "user",
+            text: userMessage
+        });
+
+        Message.create({
+            userId: req.user.id,
+            conversationId: req.body.conversationId,
+            sender: "bot",
+            text: botReply
+        });
         
         // Send back the bot reply
         return res.json({ reply: botReply });
@@ -42,6 +58,7 @@ const handleChat = async (req, res) => {
             error: error.stack || error.message, // Return error stack for more details in dev mode
         });
     }
+    
 };
 
 module.exports = { handleChat };

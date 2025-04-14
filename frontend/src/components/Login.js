@@ -46,6 +46,7 @@ const Login = () => {
       
       // Use the login function from AuthContext
       await login(res.data);
+      localStorage.setItem('token', res.data.token);
       
       // Navigate to home page (which will show dashboard if authenticated)
       navigate('/');
