@@ -1,65 +1,257 @@
-.dailygoals-container {
-    background: var(--goals-bg);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 8px var(--shadow-color);
+.daily-goals {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--goals-bg);
+  border-radius: 15px;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.daily-goals h2 {
+  color: var(--text-primary);
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.goal-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
+}
+
+.goal-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.goal-text {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: var(--text-primary);
+  background: transparent;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+}
+
+.goal-text:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  background: var(--bg-secondary);
+}
+
+.goal-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.goal-item:hover .goal-actions {
+  opacity: 1;
+}
+
+.delete-btn, .edit-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.edit-btn:hover {
+  background: var(--accent-primary);
+  color: white;
+  transform: scale(1.1);
+}
+
+.delete-btn:hover {
+  background: #ff4444;
+  color: white;
+  transform: scale(1.1);
+}
+
+.edit-btn svg, .delete-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.goal-checkbox {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 2px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: var(--bg-primary);
+}
+
+.goal-checkbox.checked {
+  background: var(--accent-primary);
+}
+
+.goal-checkbox svg {
+  color: white;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s ease;
+}
+
+.goal-checkbox.checked svg {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.goal-input-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.goal-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+}
+
+.goal-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(4, 170, 172, 0.1);
+}
+
+.add-goal-btn {
+  padding: 10px 20px;
+  background: var(--accent-primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.add-goal-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
   }
-  
-  .dailygoals-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 20px;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .dailygoals-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .dailygoals-list-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 15px;
-    background: var(--bg-secondary);
-    border-radius: 8px;
-    margin-bottom: 10px;
-    transition: all 0.3s ease;
-  }
-  
-  .dailygoals-list-item:hover {
-    background: var(--accent-primary);
-    color: white;
-    box-shadow: 0 4px 8px var(--shadow-color);
-  }
-  
-  .dailygoals-list-item .goal-name {
-    font-size: 1.1rem;
-    color: var(--text-primary);
-  }
-  
-  .dailygoals-list-item .goal-status {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    font-weight: 500;
-  }
-  
-  .dailygoals-add-button {
-    padding: 12px;
-    background: var(--accent-primary);
-    color: var(--text-primary);
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.3s ease;
-  }
-  
-  .dailygoals-add-button:hover {
-    background: var(--accent-secondary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px var(--shadow-color);
-  }
-  
+}
+
+.goal-item.new {
+  animation: fadeIn 0.3s ease;
+}
+
+/* Edit Modal Styling */
+.edit-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-primary);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 400px;
+  z-index: 1000;
+}
+
+.edit-modal input {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+}
+
+.edit-modal input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(4, 170, 172, 0.1);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal-buttons button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.ok-button {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.ok-button:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+}
+
+.cancel-button {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.cancel-button:hover {
+  background: var(--border-color);
+  transform: translateY(-2px);
+}
+
+/* Overlay for modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--modal-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+} 

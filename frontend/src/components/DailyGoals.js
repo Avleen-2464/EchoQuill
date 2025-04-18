@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import '../styles/DailyGoals.css';
 
 function DailyGoals() {
   const [goals, setGoals] = useState([

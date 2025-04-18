@@ -82,4 +82,4 @@ const generateJournals = async () => {
 };
 
 // Run the script
-generateJournals(); 
+// generateJournals(); 
