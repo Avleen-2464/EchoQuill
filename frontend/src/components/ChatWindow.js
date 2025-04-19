@@ -7,6 +7,7 @@ const ChatWindow = ({ theme }) => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
+  const [conversationHistory, setConversationHistory] = useState([]);
 
   useEffect(() => {
     scrollToBottom();
@@ -21,35 +22,21 @@ const ChatWindow = ({ theme }) => {
 
     const userMessage = { text: input, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
+    setConversationHistory(prev => [...prev, { role: 'user', content: input }]);
     setInput('');
-    // setIsTyping(true);
-
-    // try {
-    //   const token = localStorage.getItem('token');
-    //   console.log(token);
-    //   const response = await axios.post('http://localhost:5000/api/chat', {
-    //     message: input,
-    //   }, {headers: {"x-auth-token": token}});
-    //   setIsTyping(false);
-    //   const botMessage = { text: response.data.reply, sender: 'bot' };
-    //   setMessages(prev => [...prev, botMessage]);
-    // } catch (error) {
-    //   console.error('Error sending message:', error);
-    //   setIsTyping(false);
-    //   const errorMessage = { text: 'Sorry, there was an error processing your message.', sender: 'bot' };
-    //   setMessages(prev => [...prev, errorMessage]);
-    // }
     setIsTyping(true);
 
     try {
-      const token = localStorage.getItem('token'); // Verify this key matches where you store the token.
-      console.log(token);
+      const token = localStorage.getItem('token');
       const response = await axios.post('http://localhost:5000/api/chat', {
         message: input,
+        conversationHistory: conversationHistory
       }, {headers: {"x-auth-token": token}});
+      
       setIsTyping(false);
       const botMessage = { text: response.data.reply, sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
+      setConversationHistory(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
     } catch (error) {
       console.error('Error sending message:', error);
       setIsTyping(false);
