@@ -1,56 +1,177 @@
 .daily-goals {
-  margin-top: 20px;
-  padding: 20px;
-  background: var(--goals-bg);
-  border-radius: 15px;
-  box-shadow: 0 2px 8px var(--shadow-color);
+  background: white;
+  border-radius: 20px;
+  padding: 1.25rem;
+  box-shadow: 
+    0 8px 32px rgba(255, 192, 203, 0.6),
+    0 4px 12px rgba(50, 5, 38, 0.1),
+    inset 0 2px 8px rgba(255, 192, 203, 0.2);
+  width: 100%;
+  margin: 0;
+  border: 1px solid rgba(255, 192, 203, 0.5);
+  max-height: calc(100vh - 450px);
+  overflow-y: auto;
 }
 
-.daily-goals h2 {
-  color: var(--text-primary);
-  margin-bottom: 20px;
-  font-size: 1.2rem;
+.daily-goals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0 0.5rem;
+  border-bottom: 2px solid rgba(255, 192, 203, 0.2);
+  padding-bottom: 0.75rem;
+}
+
+.daily-goals-header h3 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #320526;
+  margin: 0;
+}
+
+.add-goal-button {
+  background: #04aaac;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(4, 170, 172, 0.3);
+}
+
+.add-goal-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(4, 170, 172, 0.4);
+}
+
+.add-goal-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.add-goal-form {
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-goal-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: 2px solid rgba(255, 192, 203, 0.4);
+  border-radius: 25px;
+  font-size: 1rem;
+  color: #320526;
+  background: white;
+  transition: all 0.3s ease;
+}
+
+.add-goal-input:focus {
+  outline: none;
+  border-color: #04aaac;
+  box-shadow: 0 0 0 2px rgba(4, 170, 172, 0.1);
+}
+
+.add-goal-submit {
+  background: #04aaac;
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0.5rem 1rem;
   font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-goal-submit:hover {
+  background: #038f91;
+  transform: translateY(-2px);
+}
+
+.goals-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .goal-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px;
-  background: var(--bg-primary);
-  border-radius: 8px;
-  margin-bottom: 8px;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 192, 203, 0.3);
+  box-shadow: 0 2px 8px rgba(255, 192, 203, 0.15);
   transition: all 0.3s ease;
-  border: 1px solid var(--border-color);
 }
 
 .goal-item:hover {
-  transform: translateX(5px);
-  box-shadow: 0 2px 5px var(--shadow-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 192, 203, 0.3);
+}
+
+.goal-checkbox {
+  width: 28px;
+  height: 28px;
+  border: 2.5px solid rgba(255, 192, 203, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  background: white;
+}
+
+.goal-checkbox:hover {
+  border-color: #04aaac;
+  transform: scale(1.1);
+}
+
+.goal-checkbox svg {
+  width: 18px;
+  height: 18px;
+  color: white;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.goal-item.completed .goal-checkbox {
+  background: #04aaac;
+  border-color: #04aaac;
+}
+
+.goal-item.completed .goal-checkbox svg {
+  opacity: 1;
 }
 
 .goal-text {
   flex: 1;
-  padding: 8px;
-  border: 1px solid transparent;
-  border-radius: 4px;
-  color: var(--text-primary);
-  background: transparent;
+  color: #320526;
+  font-size: 1.1rem;
+  font-weight: 600;
   transition: all 0.3s ease;
-  font-size: 0.95rem;
 }
 
-.goal-text:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  background: var(--bg-secondary);
+.goal-item.completed .goal-text {
+  text-decoration: line-through;
+  opacity: 0.7;
 }
 
 .goal-actions {
   display: flex;
-  gap: 8px;
-  margin-left: auto;
+  gap: 0.5rem;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -59,199 +180,101 @@
   opacity: 1;
 }
 
-.delete-btn, .edit-btn {
+.edit-btn,
+.delete-btn {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
   border: none;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
+  background: rgba(255, 192, 203, 0.1);
+  border: 1px solid rgba(255, 192, 203, 0.3);
+}
+
+.edit-btn svg,
+.delete-btn svg {
+  width: 16px;
+  height: 16px;
+  color: #320526;
+  transition: all 0.3s ease;
 }
 
 .edit-btn:hover {
-  background: var(--accent-primary);
-  color: white;
+  background: rgba(4, 170, 172, 0.1);
+  border-color: #04aaac;
   transform: scale(1.1);
+}
+
+.edit-btn:hover svg {
+  color: #04aaac;
 }
 
 .delete-btn:hover {
-  background: #ff4444;
-  color: white;
+  background: rgba(255, 59, 48, 0.1);
+  border-color: #ff3b30;
   transform: scale(1.1);
 }
 
-.edit-btn svg, .delete-btn svg {
-  width: 16px;
-  height: 16px;
+.delete-btn:hover svg {
+  color: #ff3b30;
 }
 
-.goal-checkbox {
-  width: 24px;
-  height: 24px;
-  border-radius: 4px;
-  border: 2px solid var(--accent-primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: var(--bg-primary);
-}
-
-.goal-checkbox.checked {
-  background: var(--accent-primary);
-}
-
-.goal-checkbox svg {
-  color: white;
-  opacity: 0;
-  transform: scale(0.8);
-  transition: all 0.2s ease;
-}
-
-.goal-checkbox.checked svg {
-  opacity: 1;
-  transform: scale(1);
-}
-
-.goal-input-container {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 15px;
-}
-
-.goal-input {
+.goal-edit-container {
   flex: 1;
-  padding: 10px 15px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
 }
 
-.goal-input:focus {
-  outline: none;
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 2px rgba(4, 170, 172, 0.1);
-}
-
-.add-goal-btn {
-  padding: 10px 20px;
-  background: var(--accent-primary);
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
-}
-
-.add-goal-btn:hover {
-  background: var(--accent-secondary);
-  transform: translateY(-2px);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.goal-item.new {
-  animation: fadeIn 0.3s ease;
-}
-
-/* Edit Modal Styling */
-.edit-modal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--bg-primary);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px var(--shadow-color);
-  border: 1px solid var(--border-color);
-  width: 90%;
-  max-width: 400px;
-  z-index: 1000;
-}
-
-.edit-modal input {
+.goal-edit-input {
   width: 100%;
-  padding: 10px 15px;
-  border: 1px solid var(--border-color);
+  padding: 0.5rem;
+  border: 2px solid rgba(255, 192, 203, 0.4);
   border-radius: 8px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-  font-size: 0.95rem;
-  margin-bottom: 15px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #320526;
+  background: white;
   transition: all 0.3s ease;
 }
 
-.edit-modal input:focus {
+.goal-edit-input:focus {
   outline: none;
-  border-color: var(--accent-primary);
+  border-color: #04aaac;
   box-shadow: 0 0 0 2px rgba(4, 170, 172, 0.1);
 }
 
-.modal-buttons {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+/* Scrollbar styling */
+.daily-goals::-webkit-scrollbar {
+  width: 6px;
 }
 
-.modal-buttons button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 500;
+.daily-goals::-webkit-scrollbar-track {
+  background: rgba(255, 192, 203, 0.1);
+  border-radius: 3px;
 }
 
-.ok-button {
-  background: var(--accent-primary);
-  color: white;
+.daily-goals::-webkit-scrollbar-thumb {
+  background: rgba(255, 192, 203, 0.5);
+  border-radius: 3px;
 }
 
-.ok-button:hover {
-  background: var(--accent-secondary);
-  transform: translateY(-2px);
+.daily-goals::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 192, 203, 0.7);
 }
 
-.cancel-button {
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
+@media (max-width: 768px) {
+  .daily-goals {
+    padding: 1rem;
+    max-height: calc(100vh - 400px);
+  }
 
-.cancel-button:hover {
-  background: var(--border-color);
-  transform: translateY(-2px);
-}
+  .goal-item {
+    padding: 0.75rem;
+  }
 
-/* Overlay for modal */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--modal-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
+  .goal-actions {
+    opacity: 1;
+  }
 } 

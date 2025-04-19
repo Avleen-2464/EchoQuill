@@ -49,8 +49,8 @@ const Login = () => {
       await login(res.data);
       localStorage.setItem('token', res.data.token);
       
-      // Navigate to home page (which will show dashboard if authenticated)
-      navigate('/');
+      // Navigate to dashboard instead of home page
+      navigate('/dashboard');
     } catch (err) {
       console.error('Login error full details:', err);
       
@@ -66,9 +66,8 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <div className="auth-card">
-        <h2>Welcome Back</h2>
-        <p className="auth-subtitle">Sign in to continue your journaling journey</p>
+      <div className="auth-box">
+        <div className="welcome-text">Welcome Back</div>
         
         {serverStatus === 'not-running' && (
           <div className="auth-error">
@@ -123,17 +122,21 @@ const Login = () => {
           
           <button 
             type="submit" 
-            className="auth-button"
+            className={`auth-button ${loading ? 'loading' : ''}`}
             disabled={loading || serverStatus === 'not-running'}
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
         
-        <p className="auth-switch">
-          Don't have an account?{' '}
-          <a href="/register">Sign up</a>
-        </p>
+        <div className="auth-footer">
+          <p>
+            Don't have an account?{' '}
+            <span onClick={() => navigate('/register')} className="auth-link">
+              Sign up
+            </span>
+          </p>
+        </div>
       </div>
     </div>
   );

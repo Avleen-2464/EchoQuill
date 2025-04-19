@@ -8,6 +8,7 @@ import Login from './components/Login';
 import Register from './components/Register';
 import Dashboard from './components/Dashboard';
 import Navbar from './components/Navbar';
+import LandingPage from './components/LandingPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Importing Global Styles
@@ -18,19 +19,20 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <Navbar />
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route 
-              path="/" 
+              path="/dashboard" 
               element={
                 <ProtectedRoute>
+                  <Navbar />
                   <Dashboard />
                 </ProtectedRoute>
               } 
             />
-            {/* Redirect any unknown routes to home */}
+            {/* Redirect any unknown routes to landing page */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

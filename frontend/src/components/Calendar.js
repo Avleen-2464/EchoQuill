@@ -1,18 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import '../styles/Calendar.css';
 
 const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => {
-  // Default to current date if currentDate is undefined
   const current = currentDate || new Date();
+  const today = new Date();
+
+  // Function to check if a date is in the future
+  const isFutureMonth = (date) => {
+    const now = new Date();
+    return date.getFullYear() > now.getFullYear() ||
+      (date.getFullYear() === now.getFullYear() && date.getMonth() > now.getMonth());
+  };
 
   // Function to navigate to the previous or next month
   const navigateMonth = (direction) => {
-    setCurrentDate(new Date(current.getFullYear(), current.getMonth() + direction, 1));
+    const newDate = new Date(current.getFullYear(), current.getMonth() + direction, 1);
+    if (!isFutureMonth(newDate)) {
+      setCurrentDate(newDate);
+    }
   };
 
-  // Function to go to the current month
-  const goToCurrentMonth = () => {
-    setCurrentDate(new Date());
+  // Function to render weekday headers
+  const renderWeekdays = () => {
+    const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    return weekdays.map(day => (
+      <div key={day} className="calendar-weekday">{day}</div>
+    ));
   };
 
   // Function to render the calendar grid
@@ -30,6 +43,7 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
     }
   
     for (let i = 1; i <= lastDay.getDate(); i++) {
+      const currentDate = new Date(current.getFullYear(), current.getMonth(), i);
       const date = `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       
       const hasJournal = safeJournalEntries.some(entry => {
@@ -39,20 +53,27 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
       });
   
       const hasChat = safeChatDays.has(date);
+      const isToday = currentDate.toDateString() === today.toDateString();
+      const isPast = currentDate < today;
+      const isFuture = currentDate > today;
+
+      const classNames = [
+        'calendar-day',
+        isToday ? 'today' : '',
+        hasJournal ? 'has-journal' : '',
+        hasChat ? 'has-chat' : '',
+        isPast ? 'past' : '',
+        isFuture ? 'future' : ''
+      ].filter(Boolean).join(' ');
   
       days.push(
         <div
           key={i}
-          className={`calendar-day ${hasJournal ? 'completed' : ''} ${hasChat ? 'has-chat' : ''}`}
+          className={classNames}
           onClick={() => hasChat && console.log('View chats for:', date)}
-          title={hasJournal ? "Has journal entry" : ""}
         >
-          {i}
-          {hasJournal && (
-            <svg className="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="14" height="14">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
-            </svg>
-          )}
+          <span className="day-number">{i}</span>
+          {(hasJournal || hasChat) && <div className="activity-indicator"></div>}
         </div>
       );
     }
@@ -60,20 +81,35 @@ const Calendar = ({ journalEntries, chatDays, currentDate, setCurrentDate }) => 
     return days;
   };
   
-  
   return (
-    <div className="calendar-section">
+    <div className="calendar-container">
       <div className="calendar-header">
-        <button onClick={() => navigateMonth(-1)}>&lt;</button>
-        <h3>{current.toLocaleString('default', { month: 'long', year: 'numeric' })}</h3>
-        <button onClick={() => navigateMonth(1)}>&gt;</button>
+        <button 
+          className="calendar-nav-button"
+          onClick={() => navigateMonth(-1)}
+        >
+          ←
+        </button>
+        <h3 className="calendar-month-year">
+          {current.toLocaleString('default', { month: 'long', year: 'numeric' })}
+        </h3>
+        {!isFutureMonth(new Date(current.getFullYear(), current.getMonth() + 1, 1)) && (
+          <button 
+            className="calendar-nav-button"
+            onClick={() => navigateMonth(1)}
+          >
+            →
+          </button>
+        )}
+      </div>
+      <div className="calendar-weekdays">
+        {renderWeekdays()}
       </div>
       <div className="calendar-grid">
         {renderCalendar()}
       </div>
-      <button onClick={goToCurrentMonth}>Today</button>
     </div>
   );
-  
 };
+
 export default Calendar;
