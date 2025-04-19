@@ -3,8 +3,11 @@ import Calendar from './Calendar';
 import DailyGoals from './DailyGoals';
 import ChatWindow from './ChatWindow';
 import Journal from './Journal';
+import { useJournal } from '../context/JournalContext';
 
 const Dashboard = () => {
+  const { showJournal } = useJournal();
+
   return (
     <div className="dashboard">
       <div className="dashboard-grid">
@@ -15,7 +18,7 @@ const Dashboard = () => {
         <div className="right-panel">
           <ChatWindow />
         </div>
-        <div className="journal-section">
+        <div className={`journal-section ${showJournal ? 'open' : ''}`}>
           <Journal />
         </div>
       </div>

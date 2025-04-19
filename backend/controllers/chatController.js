@@ -14,7 +14,7 @@ const handleChat = async (req, res) => {
 
         // Sending the message to Ollama for response
         const response = await axios.post("http://localhost:11434/api/generate", {
-            model: "llama3.2-friend:latest",
+            model: "llama3:latest",
             prompt: userMessage,
             stream: false,
             options: {

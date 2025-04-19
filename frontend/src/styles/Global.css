@@ -100,13 +100,17 @@ input:focus, textarea:focus, select:focus {
     padding-top: 80px; /* Increased to prevent navbar overlap */
     min-height: 100vh;
     background: var(--bg-primary);
-    display: grid;
+    /* display: grid; */
+    display: flex;
     grid-template-columns: minmax(300px, 25%) 1fr;
     gap: var(--spacing-lg);
     padding-left: var(--spacing-lg);
     padding-right: var(--spacing-lg);
 }
-
+.dashboard-grid {
+    display: flex;
+    width: 100%;
+}
 .left-panel {
     position: sticky;
     top: 80px;
@@ -119,10 +123,27 @@ input:focus, textarea:focus, select:focus {
 }
 
 .right-panel {
+    flex: 1;
     padding: var(--spacing-md);
     display: flex;
     flex-direction: column;
     gap: var(--spacing-lg);
+    height: calc(100vh - 100px);
+    overflow: hidden;
+}
+.journal-section {
+    position: fixed;
+    right: 0;
+    top: 60px;
+    bottom: 0;
+    width: 350px;
+    background: var(--bg-primary);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 99;
+    border-left: 1px solid var(--border-color);
+    box-shadow: -2px 0 10px var(--shadow-color);
+    padding: 20px;
 }
 
 /* Card Styles */

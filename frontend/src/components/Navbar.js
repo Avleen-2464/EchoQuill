@@ -2,11 +2,13 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { useJournal } from '../context/JournalContext';
 import '../styles/Navbar.css'
 
 const Navbar = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
+  const { toggleJournal } = useJournal();
 
   return (
     <nav className={`navbar ${isDarkMode ? 'dark' : 'light'}`}>
@@ -19,7 +21,9 @@ const Navbar = () => {
 
       <div className="navbar-menu">
         {user && (
-          <Link to="/journal" className="navbar-item">Journal</Link>
+          <button onClick={toggleJournal} className="navbar-item">
+            Journal
+          </button>
         )}
         
         <div className="navbar-item">

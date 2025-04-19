@@ -53,6 +53,19 @@
   color: var(--accent-primary);
 }
 
+/* Journal button specific styles */
+.navbar-menu button.navbar-item {
+  color: #000000;
+  background: white;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-menu button.navbar-item:hover {
+  background: var(--accent-primary);
+  color: white;
+}
+
 .navbar-menu {
   display: flex;
   align-items: center;
