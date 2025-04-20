@@ -1,9 +1,10 @@
-const Journal = require('../models/JournalEntry');
+const JournalEntry = require('../models/JournalEntry');
 const Message = require('../models/Message');
+const axios = require('axios');
 
 exports.getAllJournals = async (req, res) => {
     try {
-        const journals = await Journal.find({ userId: req.user.id }).sort({ date: -1 });
+        const journals = await JournalEntry.find({ userId: req.user.id }).sort({ date: -1 });
         res.json(journals);
     } catch (err) {
         console.error('Error fetching journals:', err.message);
@@ -46,7 +47,7 @@ exports.generateFromChat = async (req, res) => {
         const data = await response.json();
         const generatedContent = data.response;
 
-        const newJournal = new Journal({
+        const newJournal = new JournalEntry({
             userId: req.user.id,
             date: new Date(date),
             content: generatedContent,
@@ -64,7 +65,7 @@ exports.generateFromChat = async (req, res) => {
 
 exports.deleteJournal = async (req, res) => {
     try {
-        const journal = await Journal.findOne({ _id: req.params.id, userId: req.user.id });
+        const journal = await JournalEntry.findOne({ _id: req.params.id, userId: req.user.id });
         if (!journal) {
             return res.status(404).json({ message: 'Journal entry not found' });
         }
@@ -74,5 +75,61 @@ exports.deleteJournal = async (req, res) => {
     } catch (err) {
         console.error('Error deleting journal:', err.message);
         res.status(500).json({ message: err.message });
+    }
+};
+
+exports.createJournalFromChat = async (req, res) => {
+    try {
+        const { conversationHistory } = req.body;
+        
+        if (!conversationHistory || conversationHistory.length === 0) {
+            return res.status(400).json({ message: 'No conversation history provided' });
+        }
+
+        // Format conversation for the prompt
+        const formattedConversation = conversationHistory.map(msg => 
+            `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+        ).join('\n');
+
+        // Get current date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+
+        // Generate journal entry using Llama
+        const response = await axios.post("http://localhost:11434/api/generate", {
+            model: "llama2",
+            prompt: `Based on the following conversation, write a personal journal entry for ${today}. Make it reflective, personal, and include key insights. Format it as a diary entry with a greeting and signature.\n\nConversation:\n${formattedConversation}`,
+            stream: false,
+            options: {
+                temperature: 0.7,
+                max_tokens: 1000,
+            }
+        });
+
+        const journalContent = response.data.response;
+
+        // Create new journal entry
+        const journalEntry = new JournalEntry({
+            userId: req.user.id,
+            date: today,
+            entry: journalContent,
+            mood: 'Neutral',
+            keyMoments: []
+        });
+
+        await journalEntry.save();
+
+        res.json({
+            success: true,
+            message: 'Journal entry created successfully',
+            journalEntry
+        });
+
+    } catch (error) {
+        console.error('Error creating journal from chat:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error creating journal entry',
+            error: error.message
+        });
     }
 };

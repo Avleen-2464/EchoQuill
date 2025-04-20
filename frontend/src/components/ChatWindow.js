@@ -8,6 +8,7 @@ const ChatWindow = ({ theme }) => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const [conversationHistory, setConversationHistory] = useState([]);
+  const [isCreatingJournal, setIsCreatingJournal] = useState(false);
 
   useEffect(() => {
     scrollToBottom();
@@ -15,6 +16,37 @@ const ChatWindow = ({ theme }) => {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const createJournalFromConversation = async () => {
+    if (messages.length === 0) return;
+    
+    setIsCreatingJournal(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('No authentication token found. Please log in again.');
+      }
+
+      const response = await axios.post('http://localhost:5000/api/journal/create-from-chat', {
+        conversationHistory: conversationHistory
+      }, {
+        headers: { "x-auth-token": token }
+      });
+
+      if (response.data.success) {
+        alert('Journal entry created successfully!');
+        // Optionally refresh the journal list here
+      } else {
+        throw new Error(response.data.message || 'Failed to create journal entry');
+      }
+    } catch (error) {
+      console.error('Error creating journal:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create journal entry. Please try again.';
+      alert(errorMessage);
+    } finally {
+      setIsCreatingJournal(false);
+    }
   };
 
   const sendMessage = async () => {
@@ -66,6 +98,16 @@ const ChatWindow = ({ theme }) => {
 
   return (
     <div className={`chat-window ${theme}`}>
+      <div className="chat-header">
+        <h3>Chat</h3>
+        <button 
+          className="create-journal-btn"
+          onClick={createJournalFromConversation}
+          disabled={messages.length === 0 || isCreatingJournal}
+        >
+          {isCreatingJournal ? 'Creating Journal...' : 'Create Journal Entry'}
+        </button>
+      </div>
       <div className="messages">
         {messages.map((message, index) => (
           <div key={index} className={`message ${message.sender}`}>

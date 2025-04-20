@@ -12,4 +12,7 @@ router.post('/generate-from-chat', auth, journalController.generateFromChat);
 // @route DELETE /api/journal/:id
 router.delete('/:id', auth, journalController.deleteJournal);
 
+// @route POST /api/journal/create-from-chat
+router.post('/create-from-chat', auth, journalController.createJournalFromChat);
+
 module.exports = router;
