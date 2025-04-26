@@ -329,9 +329,57 @@ button[type="submit"]:hover {
     border-left: 1px solid var(--border-color);
     box-shadow: -2px 0 10px var(--shadow-color);
     padding: 20px;
+    overflow-y: auto;
 }
 
 .journal-section.open {
     transform: translateX(0);
+}
+
+/* Custom scrollbar styling */
+.journal-section::-webkit-scrollbar {
+    width: 8px;
+}
+
+.journal-section::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.journal-section::-webkit-scrollbar-thumb {
+    background: var(--accent-secondary);
+    border-radius: 4px;
+}
+
+.journal-section::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
+}
+
+.journal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 10px 0;
+    height: calc(100% - 80px);
+    overflow-y: auto;
+}
+
+/* Custom scrollbar styling for the list */
+.journal-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.journal-list::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+    border-radius: 3px;
+}
+
+.journal-list::-webkit-scrollbar-thumb {
+    background: var(--accent-secondary);
+    border-radius: 3px;
+}
+
+.journal-list::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-primary);
 }
   
