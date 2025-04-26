@@ -28,13 +28,13 @@ const ChatWindow = ({ theme }) => {
         throw new Error('No authentication token found. Please log in again.');
       }
 
-      const response = await axios.post('http://localhost:5000/api/journal/create-from-chat', {
+      const response = await axios.post('http://localhost:5000/api/journals/generate-from-chat', {
         conversationHistory: conversationHistory
       }, {
         headers: { "x-auth-token": token }
       });
 
-      if (response.data.success) {
+      if (response.status === 201) {
         alert('Journal entry created successfully!');
         // Optionally refresh the journal list here
       } else {

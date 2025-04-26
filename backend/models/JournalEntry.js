@@ -14,15 +14,7 @@ const JournalEntrySchema = new mongoose.Schema({
         type: String,
         required: true // The AI-generated journal text
     },
-    mood: {
-        type: String,
-        enum: ['Happy', 'Thoughtful', 'Anxious', 'Neutral', 'Excited'],
-        default: 'Neutral'
-    },
-    keyMoments: {
-        type: [String],
-        default: []
-    }
+    
 }, {
     timestamps: true // Adds createdAt and updatedAt
 });

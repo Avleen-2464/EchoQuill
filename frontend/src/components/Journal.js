@@ -6,9 +6,10 @@ import '../styles/Journal.css';
 const Journal = () => {
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [isVisible, setIsVisible] = useState(false); // Track visibility of journal entries
+  const [isVisible, setIsVisible] = useState(false);
+  const [activeEntry, setActiveEntry] = useState(null); // For modal (optional)
 
   useEffect(() => {
     if (user && isVisible) {
@@ -17,18 +18,16 @@ const Journal = () => {
   }, [user, isVisible]);
 
   const fetchEntries = async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
-      setError(null);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/journal', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const { data } = await axios.get('http://localhost:5000/api/journals', {
+        headers: { 'x-auth-token': token },
       });
-      setEntries(response.data);
+      setEntries(data);
     } catch (err) {
-      console.error('Error fetching entries:', err);
+      console.error('Error fetching journal entries:', err);
       setError('Failed to fetch journal entries. Please try again later.');
     } finally {
       setLoading(false);
@@ -36,32 +35,67 @@ const Journal = () => {
   };
 
   const toggleJournalVisibility = () => {
-    setIsVisible((prev) => !prev); // Toggle the visibility of journal entries
+    setIsVisible((prev) => !prev);
+  };
+
+  const openEntryModal = (entry) => {
+    setActiveEntry(entry);
+  };
+
+  const closeEntryModal = () => {
+    setActiveEntry(null);
   };
 
   return (
-    <div className="journal">
-      <h2>Journal</h2>
-      <button onClick={toggleJournalVisibility}>
-        {isVisible ? 'Close Journal' : 'Open Journal'}
-      </button>
+    <div className="journal-container">
+      <div className="journal">
+        <h2 className="journal-title">Journal</h2>
+        <button onClick={toggleJournalVisibility} className="journal-toggle">
+          {isVisible ? 'Close Journal' : 'Open Journal'}
+        </button>
 
-      {isVisible && (
-        <div className="entries">
-          {loading ? (
-            <p>Loading entries...</p>
-          ) : error ? (
-            <p className="error">{error}</p>
-          ) : entries.length === 0 ? (
-            <p>No journal entries found.</p>
-          ) : (
-            entries.map((entry) => (
-              <div key={entry._id} className="entry">
-                <p>{entry.content}</p>
-                <small>{new Date(entry.createdAt).toLocaleDateString()}</small>
-              </div>
-            ))
-          )}
+        {isVisible && (
+          <div className="journal-list">
+            {loading ? (
+              <p>Loading entries...</p>
+            ) : error ? (
+              <p className="error">{error}</p>
+            ) : entries.length === 0 ? (
+              <p>No journal entries found.</p>
+            ) : (
+              entries.map((entry) => (
+                <div
+                  key={entry._id}
+                  className="journal-entry"
+                  onClick={() => openEntryModal(entry)}
+                >
+                  <div className="journal-date">
+                    {new Date(entry.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="journal-preview">
+                    {entry.entry?.substring(0, 100)}...
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Modal for detailed entry view */}
+      {activeEntry && (
+        <div className="journal-modal" onClick={closeEntryModal}>
+          <div className="journal-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="journal-modal-header">
+              <span className="journal-modal-date">
+                {new Date(activeEntry.createdAt).toLocaleString()}
+              </span>
+              <button className="close-button" onClick={closeEntryModal}>×</button>
+            </div>
+            <div className="journal-modal-body">
+              <p>{activeEntry.entry}</p>
+            </div>
+          </div>
         </div>
       )}
     </div>
