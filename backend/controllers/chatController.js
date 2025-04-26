@@ -25,7 +25,7 @@ const handleChat = async (req, res) => {
 
         // Sending the message to Ollama for response
         const response = await axios.post("http://localhost:11434/api/generate", {
-            model: "llama3",
+            model: "llama3.2-friend",
             prompt: prompt,
             stream: false,
             options: {
@@ -70,5 +70,26 @@ const handleChat = async (req, res) => {
         });
     }
 };
-
-module.exports = { handleChat };
+const getChatHistory = async (req, res) => {
+    try {
+      const today = new Date();
+      const startOfDay = new Date(today.setHours(0, 0, 0, 0));  // start of today (00:00:00)
+      const endOfDay = new Date(today.setHours(23, 59, 59, 999));  // end of today (23:59:59)
+  
+      // Find messages for today and for the authenticated user
+      const messages = await Message.find({
+        userId: req.user.id,
+        timestamp: { $gte: startOfDay, $lte: endOfDay }
+      }).sort({ timestamp: 1 }); // Sorting messages by timestamp (ascending)
+  
+      res.status(200).json({ message: "Chat history fetched successfully", messages });
+    } catch (error) {
+      console.error('Error fetching chat history:', error);
+      res.status(500).json({ message: 'Error fetching chat history' });
+    }
+  };
+  
+  module.exports = {
+    handleChat,
+    getChatHistory
+  };

@@ -95,6 +95,37 @@ const ChatWindow = ({ theme }) => {
       />
     </div>
   );
+  useEffect(() => {
+    const fetchChatHistory = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/chat/history', {
+          headers: { "x-auth-token": token }
+        });
+  
+        const fetchedMessages = response.data.messages || [];
+  
+        // Format messages and conversation history
+        const formattedMessages = fetchedMessages.map(msg => ({
+          text: msg.text,
+          sender: msg.sender === 'user' ? 'user' : 'bot'
+        }));
+  
+        const formattedHistory = fetchedMessages.map(msg => ({
+          role: msg.sender === 'user' ? 'user' : 'assistant',
+          content: msg.text
+        }));
+  
+        setMessages(formattedMessages);
+        setConversationHistory(formattedHistory);
+  
+      } catch (error) {
+        console.error('Error fetching chat history:', error);
+      }
+    };
+  
+    fetchChatHistory();
+  }, []);
 
   return (
     <div className={`chat-window ${theme}`}>
