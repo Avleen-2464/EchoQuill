@@ -12,6 +12,10 @@
     color: var(--text-primary);
     margin-bottom: 30px;
 }
+.journal-container.closed {
+    display: none; /* Completely hides the Journal */
+  }
+  
 
 form {
     background: var(--bg-primary);
@@ -112,10 +116,59 @@ button[type="submit"]:hover {
 .journal-header {
     display: flex;
     align-items: center;
-    gap: 15px;
+    justify-content: center;
+    position: relative;
     margin-bottom: 20px;
     padding: 15px 0;
     border-bottom: 2px solid var(--border-color);
+    gap: 15px;
+}
+
+.journal-close-button {
+    position: absolute;
+    top: 50%;
+    left: -40px;
+    transform: translateY(-50%);
+    background: var(--accent-primary);
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: white;
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--accent-primary);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.journal-close-button:hover {
+    background: var(--accent-secondary);
+    box-shadow: 0 0 12px var(--accent-secondary);
+}
+
+.journal-close-button svg {
+    width: 24px;
+    height: 24px;
+}
+
+.journal-close-button {
+    position: absolute;
+    top: 50%;
+    left: -40px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.journal-close-button:hover {
+    color: var(--accent-primary);
+}
+
+.journal-close-button svg {
+    width: 24px;
+    height: 24px;
 }
 
 .journal-icon {
@@ -222,7 +275,7 @@ button[type="submit"]:hover {
     font-size: 24px;
     color: var(--text-primary);
     cursor: pointer;
-    padding: 5px 10px;
+    padding: 5px 15px;
     border-radius: 50%;
     transition: all 0.3s ease;
 }

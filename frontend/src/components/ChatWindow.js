@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/ChatWindow.css';
 
-const ChatWindow = ({ theme }) => {
+const ChatWindow = ({ theme, userGender }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -84,17 +84,32 @@ const ChatWindow = ({ theme }) => {
     }
   };
 
-  const renderAvatar = (sender) => (
-    <div className={`avatar ${sender}`}>
-      <img
-        src={sender === 'user'
-          ? 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/68.png'
-          : 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png'
-        }
-        alt={`${sender} avatar`}
-      />
-    </div>
-  );
+  const renderAvatar = (sender) => {
+    if (sender === 'user') {
+      let avatarUrl;
+      if (userGender === 'male') {
+        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png';
+      } else if (userGender === 'female') {
+        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/68.png';
+      } else {
+        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png'; // default avatar
+      }
+      return (
+        <div className="avatar user">
+          <img src={avatarUrl} alt="user avatar" />
+        </div>
+      );
+    } else {
+      return (
+        <div className="avatar bot">
+          <img
+            src="https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png"
+            alt="bot avatar"
+          />
+        </div>
+      );
+    }
+  };
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
