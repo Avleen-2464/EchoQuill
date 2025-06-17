@@ -275,7 +275,7 @@ button[type="submit"]:hover {
     font-size: 24px;
     color: var(--text-primary);
     cursor: pointer;
-    padding: 5px 15px;
+    padding: 5px 10px;
     border-radius: 50%;
     transition: all 0.3s ease;
 }
