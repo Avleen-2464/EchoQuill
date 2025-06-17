@@ -11,7 +11,9 @@ const Navbar = () => {
   const { toggleJournal } = useJournal();
 
   return (
-    <nav className={`navbar ${isDarkMode ? 'dark' : 'light'}`}>
+    <nav className={`navbar ${isDarkMode ? 'dark' : 'light'}`} style={{
+      backgroundColor: isDarkMode ? 'var(--bg-secondary)' : 'var(--navbar-bg)',
+    }}>
       <div className="navbar-brand">
         <Link to="/" className="navbar-item">
           <img src="logo.png" alt="EchoQuill Logo" className="logo" />
@@ -36,7 +38,6 @@ const Navbar = () => {
           {user ? (
             <>
               <Link to="/profile" className="navbar-item">Profile</Link>
-
               <button onClick={logout} className="navbar-item">Logout</button>
             </>
           ) : (

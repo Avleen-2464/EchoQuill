@@ -97,9 +97,51 @@ const MoodTrendsChart = () => {
   };
 
   return (
-    <div style={{ width: '100%', height: '300px' }}>
-      <h3 style={{ textAlign: 'center' }}>Mood Trends</h3>
-      {moodData.length > 0 ? <Line data={chartData} options={options} /> : <p>Loading chart...</p>}
+    <div className="mood-trends-container" style={{
+      width: '100%',
+      height: '100%',
+      padding: '20px',
+      backgroundColor: '#ffffff',
+      borderRadius: '12px',
+      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    }}>
+      <h3 style={{
+        textAlign: 'center',
+        color: '#333',
+        marginBottom: '20px',
+        fontSize: '1.5rem',
+        fontWeight: '600',
+      }}>Mood Trends</h3>
+      <div style={{ height: 'calc(100% - 60px)' }}>
+        {moodData.length > 0 ? (
+          <Line data={chartData} options={{
+            ...options,
+            maintainAspectRatio: false,
+            plugins: {
+              ...options.plugins,
+              legend: {
+                ...options.plugins.legend,
+                labels: {
+                  padding: 20,
+                  font: {
+                    size: 12
+                  }
+                }
+              }
+            }
+          }} />
+        ) : (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '100%',
+            color: '#666'
+          }}>
+            Loading chart...
+          </div>
+        )}
+      </div>
     </div>
   );
 };
