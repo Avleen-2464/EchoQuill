@@ -291,41 +291,42 @@
   background: var(--accent-primary);
   color: white;
 } 
-.listening-popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
+.mic-button {
+  background: transparent;
+  border: none;
+  padding: 8px;
 
-.mic-circle {
-  background: white;
-  padding: 40px;
-  border-radius: 20px;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  animation: fadeIn 0.3s ease-in-out;
+  cursor: pointer;
+  transition: transform 0.2s ease, color 0.3s ease;
 }
 
 .mic-icon {
-  font-size: 60px;
-  margin-bottom: 10px;
+  font-size: 24px;
+  color: #888; /* default mic color (light grey) */
 }
 
-.mic-pulse {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: #e74c3c;
-  animation: pulse 1.5s infinite;
-  margin: 0 auto 20px;
+.mic-button:hover .mic-icon {
+  color: #1abc9c; /* primary accent (mint/teal for hover) */
+  transform: scale(1.1);
 }
+
+.mic-button.recording .mic-icon {
+  color: #e74c3c; /* active/red when recording */
+  animation: pulse-color 1.5s infinite;
+}
+
+/* Optional: pulsing effect when listening */
+@keyframes pulse-color {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.15);
+  }
+}
+
 .typing-dots span {
   display: inline-block;
   font-size: 24px;

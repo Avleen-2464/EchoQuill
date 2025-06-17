@@ -1,6 +1,38 @@
 const JournalEntry = require("../models/JournalEntry");
-const Message = require("../models/Message");
+const Message = require("../models/Message"); // adjust path if needed
+
 const axios = require("axios");
+exports.getMoodTrends = async (req, res) => {
+  try {
+    const userId = req.user.id; // if you're using auth middleware
+    console.log("USER ID:", userId);
+
+    
+    const journals = await JournalEntry.find({ userId: userId }); // ✅ correct
+    console.log("Found Journals:", journals.length);
+    console.log("Journals:", journals);
+
+
+    const moodTrends = [];
+    
+    for (const entry of journals) {
+      const response = await axios.post('http://localhost:5001/api/predict', {
+        text: entry.entry,
+      });
+      console.log('Sending to model:', entry.entry);
+      
+      moodTrends.push({
+        date: entry.createdAt.toISOString().split('T')[0],
+        predictions: response.data.predictions,
+      });
+    }
+
+    res.json(moodTrends);
+  } catch (error) {
+    console.error('Error fetching mood trends:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 // Get all journals
 exports.getAllJournals = async (req, res) => {
@@ -40,7 +72,7 @@ exports.generateFromChat = async (req, res) => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "llama3",
-        prompt: `Based on the following conversation, write a personal journal entry for ${date} Donot mention the date. Make it reflective, personal, and include key insights. Format it as a diary entry.\n\nConversation:\n${conversation}`,
+        prompt: `Based on the following conversation, write a personal journal entry for ${date} Donot mention the date. Make it reflective, personal, and include key insights. Format it as a diary entry.\n\nConversation:\n${rawConversation}`,
         stream: false,
       }),
     });
@@ -59,16 +91,30 @@ const finalJournalResponse = await axios.post("http://localhost:11434/api/genera
   },
 });
 
+// Step 3: Predict emotions using the ML model
+const emotionResponse = await axios.post("http://localhost:5000/api/predict", {
+  text: generatedContent,
+});
 
-    const generatedContent = finalJournalResponse.data.response;
+const predictedEmotions = emotionResponse.data.predictions || [];
 
-    const newJournal = new JournalEntry({
-      userId: req.user.id,
-      date: new Date(date),
-      entry: generatedContent,
-      mood: "neutral",
-      aiGenerated: true,
-    });
+// Optional: convert to a simplified format (just labels or label:score)
+const topEmotions = predictedEmotions.map(e => `${e.label} (${e.score})`).join(', ')
+
+
+
+    const generatedContent = finalJournalResponse.data.response.trim();
+
+
+// ✅ Only one declaration of newJournal
+const newJournal = new JournalEntry({
+  userId: req.user.id,
+  date: new Date(date),
+  entry: generatedContent,
+  mood: topEmotions || "neutral",
+  aiGenerated: true,
+});
+
 
     const savedJournal = await newJournal.save();
     res.status(201).json(savedJournal);

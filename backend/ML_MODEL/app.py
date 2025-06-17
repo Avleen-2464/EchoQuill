@@ -1,9 +1,13 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # <-- Add this
+
+
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import torch.nn.functional as F
 
 app = Flask(__name__)
+CORS(app)  # <-- Enable CORS
 
 # Load tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained("SamLowe/roberta-base-go_emotions")
@@ -39,4 +43,4 @@ def predict():
     })
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

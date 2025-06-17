@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import axios from 'axios';
-import '../styles/ChatWindow.css';
+import React, { useState, useRef, useEffect } from "react";
+import axios from "axios";
+import "../styles/ChatWindow.css";
 
 const ChatWindow = ({ theme, userGender }) => {
   const [isListening, setIsListening] = useState(false);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const [conversationHistory, setConversationHistory] = useState([]);
@@ -25,25 +25,34 @@ const ChatWindow = ({ theme, userGender }) => {
 
     setIsCreatingJournal(true);
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
-        throw new Error('No authentication token found. Please log in again.');
+        throw new Error("No authentication token found. Please log in again.");
       }
 
-      const response = await axios.post('http://localhost:5000/api/journals/generate-from-chat', {
-        conversationHistory: conversationHistory
-      }, {
-        headers: { "x-auth-token": token }
-      });
+      const response = await axios.post(
+        "http://localhost:5000/api/journals/generate-from-chat",
+        {
+          conversationHistory: conversationHistory,
+        },
+        {
+          headers: { "x-auth-token": token },
+        }
+      );
 
       if (response.status === 201) {
-        alert('Journal entry created successfully!');
+        alert("Journal entry created successfully!");
       } else {
-        throw new Error(response.data.message || 'Failed to create journal entry');
+        throw new Error(
+          response.data.message || "Failed to create journal entry"
+        );
       }
     } catch (error) {
-      console.error('Error creating journal:', error);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to create journal entry. Please try again.';
+      console.error("Error creating journal:", error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create journal entry. Please try again.";
       alert(errorMessage);
     } finally {
       setIsCreatingJournal(false);
@@ -54,51 +63,67 @@ const ChatWindow = ({ theme, userGender }) => {
     const textToSend = customInput !== undefined ? customInput : input;
     if (!textToSend.trim()) return;
 
-    const userMessage = { text: textToSend, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
-    setConversationHistory(prev => [...prev, { role: 'user', content: textToSend }]);
-    setInput('');
+    const userMessage = { text: textToSend, sender: "user" };
+    setMessages((prev) => [...prev, userMessage]);
+    setConversationHistory((prev) => [
+      ...prev,
+      { role: "user", content: textToSend },
+    ]);
+    setInput("");
     setIsTyping(true);
 
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:5000/api/chat', {
-        message: textToSend,
-        conversationHistory: conversationHistory
-      }, { headers: { "x-auth-token": token } });
+      const token = localStorage.getItem("token");
+      const response = await axios.post(
+        "http://localhost:5000/api/chat",
+        {
+          message: textToSend,
+          conversationHistory: conversationHistory,
+        },
+        { headers: { "x-auth-token": token } }
+      );
 
-      const botMessage = { text: response.data.reply, sender: 'bot' };
+      const botMessage = { text: response.data.reply, sender: "bot" };
 
       // Simulate typing delay
       setTimeout(() => {
         setIsTyping(false);
-        setMessages(prev => [...prev, botMessage]);
-        setConversationHistory(prev => [...prev, { role: 'assistant', content: response.data.reply }]);
+        setMessages((prev) => [...prev, botMessage]);
+        setConversationHistory((prev) => [
+          ...prev,
+          { role: "assistant", content: response.data.reply },
+        ]);
       }, 500);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
       setIsTyping(false);
-      const errorMessage = { text: 'Sorry, there was an error processing your message.', sender: 'bot' };
-      setMessages(prev => [...prev, errorMessage]);
+      const errorMessage = {
+        text: "Sorry, there was an error processing your message.",
+        sender: "bot",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
   };
 
   const renderAvatar = (sender) => {
-    if (sender === 'user') {
+    if (sender === "user") {
       let avatarUrl;
-      if (userGender === 'male') {
-        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png';
-      } else if (userGender === 'female') {
-        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/68.png';
+      if (userGender === "male") {
+        avatarUrl =
+          "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png";
+      } else if (userGender === "female") {
+        avatarUrl =
+          "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/female/68.png";
       } else {
-        avatarUrl = 'https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png';
+        avatarUrl =
+          "https://raw.githubusercontent.com/Ashwinvalento/cartoon-avatar/master/lib/images/male/45.png";
       }
       return (
         <div className="avatar user">
@@ -120,28 +145,30 @@ const ChatWindow = ({ theme, userGender }) => {
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get('http://localhost:5000/api/chat/history', {
-          headers: { "x-auth-token": token }
-        });
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:5000/api/chat/history",
+          {
+            headers: { "x-auth-token": token },
+          }
+        );
 
         const fetchedMessages = response.data.messages || [];
 
-        const formattedMessages = fetchedMessages.map(msg => ({
+        const formattedMessages = fetchedMessages.map((msg) => ({
           text: msg.text,
-          sender: msg.sender === 'user' ? 'user' : 'bot'
+          sender: msg.sender === "user" ? "user" : "bot",
         }));
 
-        const formattedHistory = fetchedMessages.map(msg => ({
-          role: msg.sender === 'user' ? 'user' : 'assistant',
-          content: msg.text
+        const formattedHistory = fetchedMessages.map((msg) => ({
+          role: msg.sender === "user" ? "user" : "assistant",
+          content: msg.text,
         }));
 
         setMessages(formattedMessages);
         setConversationHistory(formattedHistory);
-
       } catch (error) {
-        console.error('Error fetching chat history:', error);
+        console.error("Error fetching chat history:", error);
       }
     };
 
@@ -149,14 +176,15 @@ const ChatWindow = ({ theme, userGender }) => {
   }, []);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       alert("Speech recognition not supported in this browser.");
       return;
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
+    recognition.lang = "en-US";
     recognition.interimResults = false;
 
     recognition.onresult = (event) => {
@@ -187,7 +215,7 @@ const ChatWindow = ({ theme, userGender }) => {
           onClick={createJournalFromConversation}
           disabled={messages.length === 0 || isCreatingJournal}
         >
-          {isCreatingJournal ? 'Creating Journal...' : 'Create Journal Entry'}
+          {isCreatingJournal ? "Creating Journal..." : "Create Journal Entry"}
         </button>
       </div>
 
@@ -201,9 +229,11 @@ const ChatWindow = ({ theme, userGender }) => {
 
         {isTyping && (
           <div className="message bot typing-indicator">
-            {renderAvatar('bot')}
+            {renderAvatar("bot")}
             <p className="message-text typing-dots">
-              <span>.</span><span>.</span><span>.</span>
+              <span>.</span>
+              <span>.</span>
+              <span>.</span>
             </p>
           </div>
         )}
@@ -219,9 +249,14 @@ const ChatWindow = ({ theme, userGender }) => {
           onKeyDown={handleKeyPress}
           placeholder="Type your message..."
         />
-        <button className="mic-button" onClick={startListening} title="Speak">
-          🎤
+        <button
+          className={`mic-button ${isListening ? "recording" : ""}`}
+          onClick={startListening}
+          title="Speak"
+        >
+          <i className="fa-solid fa-microphone mic-icon"></i>
         </button>
+
         <button className="send-button" onClick={sendMessage}>
           Send
         </button>

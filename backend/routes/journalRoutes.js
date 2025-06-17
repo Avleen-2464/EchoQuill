@@ -13,6 +13,7 @@ router.post('/generate-from-chat', auth, journalController.generateFromChat);
 router.delete('/:id', auth, journalController.deleteJournal);
 
 // @route POST /api/journal/create-from-chat
-router.post('/create-from-chat', auth, journalController.createJournalFromChat);
+// router.post('/create-from-chat', auth, journalController.createJournalFromChat);
+router.get('/mood-trends', auth, journalController.getMoodTrends);
 
 module.exports = router;

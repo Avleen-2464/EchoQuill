@@ -3,6 +3,10 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider } from './context/AuthContext';
 import { JournalProvider } from './context/JournalContext';
+import ProfilePage from './components/ProfilePage';
+
+
+
 
 // Importing Components
 import Login from './components/Login';
@@ -25,6 +29,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
+              <Route path="/profile" element={<ProfilePage />} />
               <Route 
                 path="/dashboard" 
                 element={
