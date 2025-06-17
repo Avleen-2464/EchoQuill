@@ -35,12 +35,25 @@ exports.generateFromChat = async (req, res) => {
       .map((msg) => `${msg.sender === "user" ? "User" : "Assistant"}: ${msg.text}`)
       .join("\n");
 
+<<<<<<< Updated upstream
     // Step 1: Summarize the day (no AI, no chat)
    const summaryResponse = await axios.post("http://localhost:11434/api/generate", {
   model: "llama3",
   prompt: `You are a thoughtful person reflecting on your day. Read the following stream-of-consciousness and extract key moments, personal emotions, and life experiences. Summarize them as bullet points. Do not mention chat, AI, or conversations.\n\nInput:\n${rawConversation}`,
   stream: false,
 });
+=======
+    const response = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "llama3",
+        prompt: `Based on the following conversation, write a personal journal entry for ${date} Donot mention the date. Make it reflective, personal, and include key insights. Format it as a diary entry.\n\nConversation:\n${conversation}`,
+        stream: false,
+      }),
+    });
+    // console.log(await response.text());
+>>>>>>> Stashed changes
 
 const summaryBulletPoints = summaryResponse.data.response;
 
@@ -94,12 +107,19 @@ exports.createJournalFromChat = async (req, res) => {
       stream: false,
     });
 
+<<<<<<< Updated upstream
     const summary = summaryResponse.data.response;
 
     // Step 2: Turn summary into human journal
     const journalResponse = await axios.post("http://localhost:11434/api/generate", {
       model: "llama3.2-friend",
       prompt: `Write a personal diary entry based on the following notes. Make it sound reflective, emotional, and natural. Use first-person writing. Do not mention any AI, chat, or conversation.\n\nNotes:\n${summary}`,
+=======
+    // Generate journal entry using Llama
+    const response = await axios.post("http://localhost:11434/api/generate", {
+      model: "llama3",
+      prompt: `Based on the following conversation, write a personal journal entry for ${today}. Make it reflective, personal, and include key insights. Format it as a diary entry with a greeting and signature.\n\nConversation:\n${formattedConversation}`,
+>>>>>>> Stashed changes
       stream: false,
       options: {
         temperature: 0.7,

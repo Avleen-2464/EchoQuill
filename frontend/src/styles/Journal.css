@@ -417,22 +417,22 @@ button[type="submit"]:hover {
     overflow-y: auto;
 }
 
-/* Custom scrollbar styling for the list */
-.journal-list::-webkit-scrollbar {
-    width: 6px;
+/* Also style the modal scrollbar */
+.journal-modal-body::-webkit-scrollbar {
+    width: 8px;
 }
 
-.journal-list::-webkit-scrollbar-track {
+.journal-modal-body::-webkit-scrollbar-track {
     background: var(--bg-secondary);
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
-.journal-list::-webkit-scrollbar-thumb {
+.journal-modal-body::-webkit-scrollbar-thumb {
     background: var(--accent-secondary);
-    border-radius: 3px;
+    border-radius: 4px;
 }
 
-.journal-list::-webkit-scrollbar-thumb:hover {
+.journal-modal-body::-webkit-scrollbar-thumb:hover {
     background: var(--accent-primary);
 }
   
