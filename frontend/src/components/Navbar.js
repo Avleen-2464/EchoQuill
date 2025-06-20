@@ -16,7 +16,6 @@ const Navbar = () => {
     }}>
       <div className="navbar-brand">
         <Link to="/" className="navbar-item">
-          <img src="logo.png" alt="EchoQuill Logo" className="logo" />
           <span>EchoQuill</span>
         </Link>
       </div>
