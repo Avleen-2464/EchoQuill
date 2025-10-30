@@ -56,7 +56,7 @@ exports.generateFromChat = async (req, res) => {
 
     // Step 2: Generate diary-style journal entry
     const finalJournalResponse = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3.2-friend",
+      model: "llama3",
       prompt: `You are writing a private diary entry at the end of the day. Use the following personal notes to reflect emotionally and naturally. Do not mention chat, AI, or conversations. Write in first person, starting with "Dear Diary" and ending with a warm, human sign-off like "Until tomorrow" or "Yours truly".\n\nPersonal Notes:\n${summaryBulletPoints}`,
       stream: false,
       options: {
@@ -129,6 +129,51 @@ exports.getMoodTrends = async (req, res) => {
   } catch (error) {
     console.error('Error fetching mood trends:', error.message);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// Monthly emotion distribution (percentages) for a given month (YYYY-MM)
+exports.getMonthlyEmotionDistribution = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { month } = req.query; // format YYYY-MM, defaults to current month
+
+    const now = new Date();
+    const [y, m] = (month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).split('-');
+    const year = parseInt(y, 10);
+    const monthIndex = parseInt(m, 10) - 1; // 0-based
+
+    const start = new Date(year, monthIndex, 1, 0, 0, 0, 0);
+    const end = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
+
+    const journals = await JournalEntry.find({
+      userId,
+      createdAt: { $gte: start, $lte: end },
+    });
+
+    const totals = {}; // label -> sum score
+    for (const entry of journals) {
+      try {
+        const response = await axios.post('http://localhost:5001/api/predict', { text: entry.entry });
+        const preds = response.data?.predictions || [];
+        preds.forEach(p => {
+          const key = (p.label || '').toLowerCase();
+          const score = Number(p.score) || 0;
+          totals[key] = (totals[key] || 0) + score;
+        });
+      } catch (e) {
+        // skip failed prediction for this entry but continue
+      }
+    }
+
+    const sum = Object.values(totals).reduce((a, b) => a + b, 0) || 1;
+    const percentages = Object.entries(totals)
+      .map(([label, value]) => ({ label, percentage: (value / sum) * 100 }))
+      .sort((a, b) => b.percentage - a.percentage);
+
+    res.json({ month: `${year}-${String(monthIndex + 1).padStart(2, '0')}`, distribution: percentages });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to compute monthly emotion distribution' });
   }
 };
 

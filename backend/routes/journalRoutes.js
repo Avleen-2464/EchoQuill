@@ -15,5 +15,6 @@ router.delete('/:id', auth, journalController.deleteJournal);
 // @route POST /api/journal/create-from-chat
 // router.post('/create-from-chat', auth, journalController.createJournalFromChat);
 router.get('/mood-trends', auth, journalController.getMoodTrends);
+router.get('/emotion-distribution', auth, journalController.getMonthlyEmotionDistribution);
 
 module.exports = router;
