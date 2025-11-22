@@ -1,5 +1,6 @@
 const JournalEntry = require("../models/JournalEntry");
 const Message = require("../models/Message"); // adjust path if needed
+const { createRemedySuggestion } = require("./remedyController");
 
 const axios = require("axios");
 
@@ -82,6 +83,7 @@ exports.generateFromChat = async (req, res) => {
 
     const predictedEmotions = emotionResponse.data.predictions || [];
     const topEmotions = predictedEmotions.map(e => `${e.label} (${e.score})`).join(", ");
+    const primaryEmotion = predictedEmotions[0]?.label;
 
     // Step 4: Save to database
     const newJournal = new JournalEntry({
@@ -93,7 +95,24 @@ exports.generateFromChat = async (req, res) => {
     });
 
     const savedJournal = await newJournal.save();
-    res.status(201).json(savedJournal);
+
+    let generatedRemedy = null;
+    if (primaryEmotion) {
+      try {
+        generatedRemedy = await createRemedySuggestion({
+          userId: req.user.id,
+          journalId: savedJournal._id,
+          emotion: primaryEmotion,
+        });
+      } catch (remedyError) {
+        console.error("Error generating remedy:", remedyError.message);
+      }
+    }
+
+    res.status(201).json({
+      journal: savedJournal,
+      remedy: generatedRemedy,
+    });
 
   } catch (err) {
     console.error("Error generating journal:", err.response?.data || err.message);
@@ -108,7 +127,7 @@ exports.getMoodTrends = async (req, res) => {
     
     const journals = await JournalEntry.find({ userId: userId }); // ✅ correct
     console.log("Found Journals:", journals.length);
-    console.log("Journals:", journals);
+    // console.log("Journals:", journals);
 
 
     const moodTrends = [];

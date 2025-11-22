@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import { useJournal } from '../context/JournalContext';
@@ -9,22 +9,26 @@ const Navbar = () => {
   const { isDarkMode, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const { toggleJournal } = useJournal();
+  const navigate = useNavigate();
 
   return (
     <nav className={`navbar ${isDarkMode ? 'dark' : 'light'}`} style={{
       backgroundColor: isDarkMode ? 'var(--bg-secondary)' : 'var(--navbar-bg)',
     }}>
       <div className="navbar-brand">
-        <Link to="/" className="navbar-item">
-          <span>EchoQuill</span>
-        </Link>
+        <button onClick={() => navigate('/dashboard')} className="navbar-item btn btn-link">🏠 Home</button>
       </div>
 
       <div className="navbar-menu">
         {user && (
-          <button onClick={toggleJournal} className="navbar-item">
-            Journal
-          </button>
+          <>
+            <button onClick={() => navigate('/journal')} className="navbar-item btn btn-link">
+              Journal
+            </button>
+            <button onClick={() => navigate('/remedies')} className="navbar-item btn btn-link">
+              Remedies
+            </button>
+          </>
         )}
         
         <div className="navbar-item">

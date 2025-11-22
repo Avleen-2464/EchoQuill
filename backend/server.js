@@ -26,6 +26,8 @@ const chatRoutes = require('./routes/chatRoutes');
 console.log('Chat routes loaded:', typeof chatRoutes);
 const journalRoutes = require('./routes/journalRoutes');
 console.log('Journal routes loaded:', typeof journalRoutes);
+const remedyRoutes = require('./routes/remedyRoutes');
+console.log('Remedy routes loaded:', typeof remedyRoutes);
 
 // MongoDB Connection with retry logic
 const connectDB = async () => {
@@ -98,6 +100,7 @@ checkOllama();
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/journals', journalRoutes);
+app.use('/api/remedy', remedyRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
