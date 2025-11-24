@@ -22,6 +22,15 @@
         required: true,
         trim: true,
       },
+      worked: {
+        type: Boolean,
+        default: null,
+      },
+      month: {
+        type: String,
+        default: null, // format YYYY-MM
+        trim: true,
+      },
       feedback: {
         type: String,
         default: undefined,

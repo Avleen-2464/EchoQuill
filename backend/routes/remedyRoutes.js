@@ -3,6 +3,8 @@ const router = express.Router();
 const auth = require("../middleware/auth");
 const remedyController = require("../controllers/remedyController");
 
+router.get("/monthly", auth, remedyController.getMonthlyRemedies);
+router.post("/monthly/generate", auth, remedyController.generateMonthlyRemedies);
 router.post("/generate", auth, remedyController.generateRemedy);
 router.post("/feedback", auth, remedyController.submitFeedback);
 

@@ -45,9 +45,7 @@ async function backfill() {
 
       journal.emotions = predictions;
       journal.primaryEmotion = primaryEmotion;
-      if ("mood" in journal) {
-        journal.mood = primaryEmotion;
-      }
+      journal.mood = primaryEmotion;
 
       await journal.save();
       console.log(

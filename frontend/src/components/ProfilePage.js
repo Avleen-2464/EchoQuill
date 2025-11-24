@@ -4,6 +4,7 @@ import DailyGoals from './DailyGoals';
 import Journal from './Journal';
 import MoodTrendsChart from './MoodTrendsChart'; // adjust the path if needed
 import EmotionPieChart from './EmotionPieChart';
+import MonthlyRemedies from './MonthlyRemedies';
 import Navbar from './Navbar';
 import { useJournal } from '../context/JournalContext';
 import { useTheme } from '../context/ThemeContext';
@@ -97,6 +98,9 @@ const ProfilePage = () => {
                 <EmotionPieChart month={selectedMonth} />
               </div>
             </div>
+          </div>
+          <div style={{ gridColumn: '1 / -1' }}>
+            <MonthlyRemedies month={selectedMonth} />
           </div>
           <div className="journal-section" style={{
             gridColumn: '1 / -1',

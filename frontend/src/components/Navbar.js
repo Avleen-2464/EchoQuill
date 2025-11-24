@@ -25,9 +25,6 @@ const Navbar = () => {
             <button onClick={() => navigate('/journal')} className="navbar-item btn btn-link">
               Journal
             </button>
-            <button onClick={() => navigate('/remedies')} className="navbar-item btn btn-link">
-              Remedies
-            </button>
           </>
         )}
         

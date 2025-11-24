@@ -16,7 +16,6 @@ import Navbar from './components/Navbar';
 import LandingPage from './components/LandingPage';
 import Journal from './components/Journal';
 import ProtectedRoute from './components/ProtectedRoute';
-import Remedies from './components/Remedies';
 
 // Importing Global Styles
 import './styles/Global.css';
@@ -47,15 +46,6 @@ function App() {
                   <ProtectedRoute>
                     <Navbar />
                     <Journal />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/remedies" 
-                element={
-                  <ProtectedRoute>
-                    <Navbar />
-                    <Remedies />
                   </ProtectedRoute>
                 } 
               />

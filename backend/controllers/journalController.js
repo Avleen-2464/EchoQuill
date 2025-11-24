@@ -319,10 +319,22 @@ exports.getMonthlyEmotionDistribution = async (req, res) => {
       end.getDate()
     ).padStart(2, "0")}`;
 
-    const journals = await JournalEntry.find({
+    const dateQuery = {
       userId,
-      date: { $gte: startDateStr, $lte: endDateStr },
-    });
+      $or: [
+        { date: { $gte: startDateStr, $lte: endDateStr } },
+        {
+          date: { $exists: false },
+          createdAt: { $gte: start, $lte: end },
+        },
+        {
+          date: { $not: /^\d{4}-\d{2}-\d{2}$/ },
+          createdAt: { $gte: start, $lte: end },
+        },
+      ],
+    };
+
+    const journals = await JournalEntry.find(dateQuery);
 
     const totals = {}; // label -> sum score
 
