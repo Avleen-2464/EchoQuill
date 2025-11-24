@@ -93,7 +93,7 @@ exports.generateFromChat = async (req, res) => {
     const summaryResponse = await axios.post(
       "http://localhost:11434/api/generate",
       {
-        model: "llama3.2-friend",
+        model: "llama3",
         prompt: `Based on the following conversation, write summary bullet points:\n\n${rawConversation}`,
         stream: false,
         options: {
@@ -123,7 +123,7 @@ exports.generateFromChat = async (req, res) => {
     const finalJournalResponse = await axios.post(
       "http://localhost:11434/api/generate",
       {
-        model: "llama3.2-friend",
+        model: "llama3",
         prompt: `You are writing a private diary entry at the end of the day. Use the following personal notes to reflect emotionally and naturally. Do not mention chat, AI, or conversations. Write in first person, starting with "Dear Diary" and ending with a warm, human sign-off like "Until tomorrow" or "Yours truly".\n\nPersonal Notes:\n${summaryBulletPoints}`,
         stream: false,
         options: {
@@ -313,9 +313,15 @@ exports.getMonthlyEmotionDistribution = async (req, res) => {
     const start = new Date(year, monthIndex, 1, 0, 0, 0, 0);
     const end = new Date(year, monthIndex + 1, 0, 23, 59, 59, 999);
 
+    // Prefer filtering on the explicit journal date string (YYYY-MM-DD)
+    const startDateStr = `${year}-${String(monthIndex + 1).padStart(2, "0")}-01`;
+    const endDateStr = `${year}-${String(monthIndex + 1).padStart(2, "0")}-${String(
+      end.getDate()
+    ).padStart(2, "0")}`;
+
     const journals = await JournalEntry.find({
       userId,
-      createdAt: { $gte: start, $lte: end },
+      date: { $gte: startDateStr, $lte: endDateStr },
     });
 
     const totals = {}; // label -> sum score
