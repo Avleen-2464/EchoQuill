@@ -13,10 +13,12 @@ const Journal = () => {
   const [activeEntry, setActiveEntry] = useState(null); // For modal (optional)
 
   useEffect(() => {
-    if (user && showJournal) {
-      fetchEntries();
-    }
-  }, [user, showJournal]);
+  if (user) {
+    console.log("[Journal] user present, fetching entries...");
+    fetchEntries();
+  }
+}, [user]);
+
   
   const fetchEntries = async () => {
     setLoading(true);
@@ -49,7 +51,8 @@ const Journal = () => {
   };
 
   return (
-    <div className={`journal-container ${showJournal ? "open" : "closed"}`}>
+    <div className="journal-container">
+
 
       <div className="journal">
         <div className="journal-header">

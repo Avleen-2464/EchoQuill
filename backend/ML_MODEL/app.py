@@ -23,19 +23,34 @@ def predict():
         return jsonify({'error': 'Text field is required.'}), 400
 
     text = data['text']
-    inputs = tokenizer(text, return_tensors="pt")
+    inputs = tokenizer(
+    text,
+    return_tensors="pt",
+    truncation=True,   # ✅ safely cut extra tokens
+    max_length=512     # ✅ model’s usual max length
+)
+
 
     with torch.no_grad():
         outputs = model(**inputs)
         probs = F.softmax(outputs.logits, dim=-1)[0]
 
     # Multi-label threshold
-    threshold = 0.3
+    threshold = 0.1
     predicted = [
         {'label': id2label[i], 'score': round(prob.item(), 3)}
         for i, prob in enumerate(probs)
         if prob > threshold
+        # after threshold filtering:
     ]
+    if not predicted:
+        topk = torch.topk(probs, k=3)
+        predicted = [
+            {'label': id2label[i.item()], 'score': round(probs[i].item(), 3)}
+            for i in topk.indices
+        ]
+
+
 
     return jsonify({
         'text': text,

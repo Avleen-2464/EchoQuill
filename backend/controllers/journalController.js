@@ -1,14 +1,14 @@
 const JournalEntry = require("../models/JournalEntry");
 const Message = require("../models/Message"); // adjust path if needed
 const { createRemedySuggestion } = require("./remedyController");
-
 const axios = require("axios");
-
 
 // Get all journals
 exports.getAllJournals = async (req, res) => {
   try {
-    const journals = await JournalEntry.find({ userId: req.user.id }).sort({ date: -1 });
+    const journals = await JournalEntry.find({ userId: req.user.id }).sort({
+      date: -1,
+    });
     res.json(journals);
   } catch (err) {
     console.error("Error fetching journals:", err.message);
@@ -17,137 +17,281 @@ exports.getAllJournals = async (req, res) => {
 };
 
 // Generate journal from saved messages
+// Generate journal from saved messages
+// Generate journal from saved messages
 exports.generateFromChat = async (req, res) => {
   try {
-    const date = new Date();
-    const startOfDay = new Date(date);
+    console.log("\n==============================");
+    console.log("▶ [generateFromChat] START");
+    console.log("👤 User ID:", req.user?.id);
+
+    // 1️⃣ Build today’s time window
+    const now = new Date();
+    const startOfDay = new Date(now);
     startOfDay.setHours(0, 0, 0, 0);
-    const endOfDay = new Date(date);
+    const endOfDay = new Date(now);
     endOfDay.setHours(23, 59, 59, 999);
 
+    const dayStr = now.toISOString().split("T")[0];
+
+    console.log("📅 Day string:", dayStr);
+    console.log(
+      "🕒 Query messages between:",
+      startOfDay.toISOString(),
+      "and",
+      endOfDay.toISOString()
+    );
+
+    // 2️⃣ Fetch today's messages
     const messages = await Message.find({
       userId: req.user.id,
       timestamp: { $gte: startOfDay, $lte: endOfDay },
     }).sort({ timestamp: 1 });
 
+    console.log("📨 Messages found for today:", messages.length);
+
     if (messages.length === 0) {
-      return res.status(400).json({ message: "No messages found for this date" });
+      console.log("⚠️ No messages found for this date.");
+      return res
+        .status(400)
+        .json({ message: "No messages found for this date" });
     }
 
+    // Log first + last message for sanity check
+    console.log("🧾 First message:", {
+      sender: messages[0].sender,
+      timestamp: messages[0].timestamp,
+      textPreview: messages[0].text.slice(0, 80),
+    });
+
+    console.log("🧾 Last message:", {
+      sender: messages[messages.length - 1].sender,
+      timestamp: messages[messages.length - 1].timestamp,
+      textPreview: messages[messages.length - 1].text.slice(0, 80),
+    });
+
+    // 3️⃣ Build rawConversation string
     const rawConversation = messages
-      .map((msg) => `${msg.sender === "user" ? "User" : "Assistant"}: ${msg.text}`)
+      .map(
+        (msg) => `${msg.sender === "user" ? "User" : "Assistant"}: ${msg.text}`
+      )
       .join("\n");
 
-    // Step 1: Generate summary bullet points
-    const summaryResponse = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3",
-      prompt: `Based on the following conversation, write summary bullet points:\n\n${rawConversation}`,
-      stream: false,
-      options: {
-        temperature: 0.6,
-        max_tokens: 500,
-      },
-    });
+    console.log(
+      "🧵 rawConversation length:",
+      rawConversation.length
+    );
+    console.log(
+      "🧵 rawConversation preview (first 400 chars):\n",
+      rawConversation.slice(0, 400),
+      rawConversation.length > 400 ? "..." : ""
+    );
 
-    const summaryBulletPoints = summaryResponse.data.response;
+    // ---------- LLM PART (SUMMARY + DIARY) ----------
+    console.log("🤖 Calling LLM for summary…");
+
+    const summaryResponse = await axios.post(
+      "http://localhost:11434/api/generate",
+      {
+        model: "llama3.2-friend",
+        prompt: `Based on the following conversation, write summary bullet points:\n\n${rawConversation}`,
+        stream: false,
+        options: {
+          temperature: 0.6,
+          max_tokens: 500,
+        },
+      }
+    );
+
+    console.log(
+      "✅ Summary response keys:",
+      Object.keys(summaryResponse.data || {})
+    );
+    console.log(
+      "📝 Summary text preview:",
+      (summaryResponse.data.response || "").slice(0, 300),
+      "..."
+    );
+
     if (!summaryResponse.data.response) {
-  throw new Error("Summary generation failed: No response from model");
-}
+      throw new Error("Summary generation failed: No response from model");
+    }
+    const summaryBulletPoints = summaryResponse.data.response;
 
+    console.log("📔 Calling LLM for final diary entry…");
 
-    // Step 2: Generate diary-style journal entry
-    const finalJournalResponse = await axios.post("http://localhost:11434/api/generate", {
-      model: "llama3",
-      prompt: `You are writing a private diary entry at the end of the day. Use the following personal notes to reflect emotionally and naturally. Do not mention chat, AI, or conversations. Write in first person, starting with "Dear Diary" and ending with a warm, human sign-off like "Until tomorrow" or "Yours truly".\n\nPersonal Notes:\n${summaryBulletPoints}`,
-      stream: false,
-      options: {
-        temperature: 0.7,
-        max_tokens: 1000,
-      },
-    });
+    const finalJournalResponse = await axios.post(
+      "http://localhost:11434/api/generate",
+      {
+        model: "llama3.2-friend",
+        prompt: `You are writing a private diary entry at the end of the day. Use the following personal notes to reflect emotionally and naturally. Do not mention chat, AI, or conversations. Write in first person, starting with "Dear Diary" and ending with a warm, human sign-off like "Until tomorrow" or "Yours truly".\n\nPersonal Notes:\n${summaryBulletPoints}`,
+        stream: false,
+        options: {
+          temperature: 0.7,
+          max_tokens: 1000,
+        },
+      }
+    );
+
+    console.log(
+      "✅ Final journal response keys:",
+      Object.keys(finalJournalResponse.data || {})
+    );
+    console.log(
+      "📓 Generated journal preview:",
+      (finalJournalResponse.data.response || "").slice(0, 300),
+      "..."
+    );
+
     if (!finalJournalResponse.data.response) {
-  throw new Error("Journal generation failed: No response from model");
-}
+      throw new Error("Journal generation failed: No response from model");
+    }
 
-
-    // ✅ FIXED: moved this BEFORE emotion prediction
     const generatedContent = finalJournalResponse.data.response?.trim();
     if (!generatedContent) {
       throw new Error("Journal generation failed: empty response");
     }
 
-    // Step 3: Predict emotions from the generated content
-    const emotionResponse = await axios.post("http://localhost:5001/api/predict", {
-      text: generatedContent,
-    });
+    // ---------- EMOTION ANALYSIS PART (THIS IS WHAT YOU CARE ABOUT) ----------
+    const MAX_CHARS = 4000;
+    const safeText = rawConversation.slice(-MAX_CHARS);
+
+    console.log(
+      "💭 Sending text to emotion model.",
+      "safeText length:",
+      safeText.length
+    );
+    console.log(
+      "💭 safeText preview (first 400 chars):\n",
+      safeText.slice(0, 400),
+      safeText.length > 400 ? "..." : ""
+    );
+
+    let emotionResponse;
+    try {
+      emotionResponse = await axios.post(
+        "http://localhost:5001/api/predict",
+        { text: safeText }
+      );
+    } catch (emotionErr) {
+      console.error(
+        "❌ Error calling emotion API:",
+        emotionErr.response?.data || emotionErr.message
+      );
+      throw new Error("Emotion API call failed");
+    }
+
+    console.log("✅ Raw emotionResponse.data:", emotionResponse.data);
 
     const predictedEmotions = emotionResponse.data.predictions || [];
-    const topEmotions = predictedEmotions.map(e => `${e.label} (${e.score})`).join(", ");
-    const primaryEmotion = predictedEmotions[0]?.label;
 
-    // Step 4: Save to database
+    console.log(
+      "🎯 Predicted emotions FULL ARRAY:",
+      JSON.stringify(predictedEmotions, null, 2)
+    );
+    console.log("🎯 Emotion count:", predictedEmotions.length);
+
+    // You can keep or remove this:
+    const primaryEmotion = predictedEmotions[0]?.label || "neutral";
+    console.log("🌈 Primary emotion (first label):", primaryEmotion);
+
+    // ---------- SAVE JOURNAL ----------
     const newJournal = new JournalEntry({
       userId: req.user.id,
-      date: new Date(date),
+      date: dayStr,
       entry: generatedContent,
-      mood: topEmotions || "neutral",
+      mood: primaryEmotion,       // optional
       aiGenerated: true,
+      emotions: predictedEmotions, // 🔥 ALL emotions stored here
+      primaryEmotion,             // optional
     });
 
     const savedJournal = await newJournal.save();
 
+    console.log("💾 Saved journal:", {
+      id: savedJournal._id.toString(),
+      date: savedJournal.date,
+      mood: savedJournal.mood,
+      emotionCount: savedJournal.emotions?.length,
+    });
+
+    // ---------- REMEDY (optional) ----------
     let generatedRemedy = null;
     if (primaryEmotion) {
+      console.log("🩹 Generating remedy for:", primaryEmotion);
       try {
         generatedRemedy = await createRemedySuggestion({
           userId: req.user.id,
           journalId: savedJournal._id,
           emotion: primaryEmotion,
         });
+        console.log("✅ Remedy generated:", generatedRemedy?._id || generatedRemedy);
       } catch (remedyError) {
-        console.error("Error generating remedy:", remedyError.message);
+        console.error(
+          "❌ Error generating remedy:",
+          remedyError.message
+        );
       }
     }
 
+    console.log("✅ [generateFromChat] END – sending response");
+
+    // EXTRA: send debug info back to frontend too
     res.status(201).json({
       journal: savedJournal,
       remedy: generatedRemedy,
+      debug: {
+        messageCount: messages.length,
+        rawConversationLength: rawConversation.length,
+        safeTextLength: safeText.length,
+        predictedEmotions, // full array visible in response
+        primaryEmotion,
+      },
     });
-
   } catch (err) {
-    console.error("Error generating journal:", err.response?.data || err.message);
+    console.error(
+      "🔥 [generateFromChat] Error:",
+      err.response?.data || err.message
+    );
     res.status(500).json({ message: err.message || "Internal server error" });
   }
 };
+
+
+
 exports.getMoodTrends = async (req, res) => {
   try {
-    const userId = req.user.id; // if you're using auth middleware
+    const userId = req.user.id;
     console.log("USER ID:", userId);
 
-    
-    const journals = await JournalEntry.find({ userId: userId }); // ✅ correct
+    const journals = await JournalEntry.find({ userId }).sort({ createdAt: 1 });
     console.log("Found Journals:", journals.length);
-    // console.log("Journals:", journals);
 
+    const moodTrends = journals
+      .filter((j) => Array.isArray(j.emotions) && j.emotions.length > 0)
+      .map((j) => {
+        // j.date is a STRING (YYYY-MM-DD) in your schema
+        let dateStr = j.date;
 
-    const moodTrends = [];
-    
-    for (const entry of journals) {
-      const response = await axios.post('http://localhost:5001/api/predict', {
-        text: entry.entry,
+        // fallback: if date missing, use createdAt (a real Date)
+        if (!dateStr && j.createdAt instanceof Date) {
+          dateStr = j.createdAt.toISOString().split("T")[0];
+        }
+
+        if (!dateStr) {
+          dateStr = String(j.createdAt || "");
+        }
+
+        return {
+          date: dateStr,
+          predictions: j.emotions,
+        };
       });
-      console.log('Sending to model:', entry.entry);
-      
-      moodTrends.push({
-        date: entry.createdAt.toISOString().split('T')[0],
-        predictions: response.data.predictions,
-      });
-    }
 
-    res.json(moodTrends);
+    return res.json(moodTrends);
   } catch (error) {
-    console.error('Error fetching mood trends:', error.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching mood trends:", error.message || error);
+    return res.status(500).json({ error: "Internal server error" });
   }
 };
 
@@ -155,10 +299,14 @@ exports.getMoodTrends = async (req, res) => {
 exports.getMonthlyEmotionDistribution = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { month } = req.query; // format YYYY-MM, defaults to current month
+    const { month } = req.query; // format YYYY-MM
 
     const now = new Date();
-    const [y, m] = (month || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`).split('-');
+    const [y, m] = (
+      month ||
+      `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
+    ).split("-");
+
     const year = parseInt(y, 10);
     const monthIndex = parseInt(m, 10) - 1; // 0-based
 
@@ -171,89 +319,39 @@ exports.getMonthlyEmotionDistribution = async (req, res) => {
     });
 
     const totals = {}; // label -> sum score
-    for (const entry of journals) {
-      try {
-        const response = await axios.post('http://localhost:5001/api/predict', { text: entry.entry });
-        const preds = response.data?.predictions || [];
-        preds.forEach(p => {
-          const key = (p.label || '').toLowerCase();
-          const score = Number(p.score) || 0;
-          totals[key] = (totals[key] || 0) + score;
-        });
-      } catch (e) {
-        // skip failed prediction for this entry but continue
-      }
-    }
+
+    journals.forEach((entry) => {
+      if (!Array.isArray(entry.emotions)) return;
+      entry.emotions.forEach((p) => {
+        const key = (p.label || "").toLowerCase();
+        const score = Number(p.score) || 0;
+        totals[key] = (totals[key] || 0) + score;
+      });
+    });
 
     const sum = Object.values(totals).reduce((a, b) => a + b, 0) || 1;
+
     const percentages = Object.entries(totals)
-      .map(([label, value]) => ({ label, percentage: (value / sum) * 100 }))
+      .map(([label, value]) => ({
+        label,
+        percentage: (value / sum) * 100,
+      }))
       .sort((a, b) => b.percentage - a.percentage);
 
-    res.json({ month: `${year}-${String(monthIndex + 1).padStart(2, '0')}`, distribution: percentages });
+    return res.json({
+      month: `${year}-${String(monthIndex + 1).padStart(2, "0")}`,
+      distribution: percentages,
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to compute monthly emotion distribution' });
+    console.error(
+      "Error computing monthly emotion distribution:",
+      error.message || error
+    );
+    return res
+      .status(500)
+      .json({ error: "Failed to compute monthly emotion distribution" });
   }
 };
-
-
-// Generate from passed conversationHistory (frontend)
-// exports.createJournalFromChat = async (req, res) => {
-//   try {
-//     const { conversationHistory } = req.body;
-
-//     if (!conversationHistory || conversationHistory.length === 0) {
-//       return res.status(400).json({ message: "No conversation history provided" });
-//     }
-
-//     const formattedConversation = conversationHistory
-//       .map((msg) => `${msg.role === "user" ? "User" : "Assistant"}: ${msg.content}`)
-//       .join("\n");
-
-//     // Step 1: Summarize the day into bullet points
-//     const summaryResponse = await axios.post("http://localhost:11434/api/generate", {
-//       model: "llama3",
-//       prompt: `Read the following and extract the person’s day into life events and emotional reflections. Avoid any mention of AI, chat, or conversation.\n\n${formattedConversation}`,
-//       stream: false,
-//     });
-
-//     // Generate journal entry using Llama
-//     const response = await axios.post("http://localhost:11434/api/generate", {
-//       model: "llama3",
-//       prompt: `Based on the following conversation, write a personal journal entry for ${today}. Make it reflective, personal, and include key insights. Format it as a diary entry with a greeting and signature.\n\nConversation:\n${formattedConversation}`,
-//       stream: false,
-//       options: {
-//         temperature: 0.7,
-//         max_tokens: 1000,
-//       },
-//     });
-
-//     const journalContent = journalResponse.data.response;
-
-//     const journalEntry = new JournalEntry({
-//       userId: req.user.id,
-//       date: new Date().toISOString().split("T")[0],
-//       entry: journalContent,
-//       mood: "Neutral",
-//       aiGenerated: true,
-//     });
-
-//     await journalEntry.save();
-
-//     res.json({
-//       success: true,
-//       message: "Journal entry created successfully",
-//       journalEntry,
-//     });
-//   } catch (error) {
-//     console.error("Error creating journal from chat:", error);
-//     res.status(500).json({
-//       success: false,
-//       message: "Error creating journal entry",
-//       error: error.message,
-//     });
-//   }
-// };
 
 // Delete a journal
 exports.deleteJournal = async (req, res) => {
