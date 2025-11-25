@@ -28,6 +28,32 @@ const NEGATIVE_EMOTIONS = new Set(
   ].map((e) => e.toLowerCase())
 );
 
+// Predefined remedies list
+const PREDEFINED_REMEDIES = [
+  "Start a simple daily routine with one fixed wake-up time.",
+  "Go outside for at least 5 minutes each day.",
+  "Take a slow 10-minute walk to clear mental fog.",
+  "Practice 2 minutes of deep breathing to calm your mind.",
+  "Limit social media and news for a few days to reduce overwhelm.",
+  "Send one message to a friend or family member each week.",
+  "Write one sentence about your feelings every night.",
+  "Do one tiny joy activity daily (music, tea, sunlight).",
+  "Clean or organize one small spot in your room.",
+  "Drink a glass of water whenever you feel mentally heavy.",
+  "Set one mini-goal for the week and complete it.",
+  "Replace one negative thought with a realistic alternative.",
+  "Spend 1–2 minutes sitting quietly with eyes closed.",
+  "Celebrate one small win from your day, no matter how tiny.",
+  "Choose one comforting song and listen mindfully.",
+  "Stretch your body for 20 seconds to release tension.",
+  "Reduce late-night scrolling to improve sleep.",
+  "Say one gentle thing to yourself daily ('I'm trying, and that's enough').",
+  "Engage in one small act of kindness toward yourself.",
+  "Reach out to one supportive person if things feel too heavy.",
+];
+
+// ---------- Helpers ----------
+
 const callLlama = async (prompt, options = {}) => {
   const payload = {
     model: OLLAMA_MODEL,
@@ -39,17 +65,59 @@ const callLlama = async (prompt, options = {}) => {
       max_tokens: options.max_tokens ?? 700,
     },
   };
+
   const response = await axios.post(OLLAMA_URL, payload);
   return response.data?.response?.trim();
 };
 
+// Select random remedies from predefined list, excluding those marked "not helpful"
+const selectRandomRemedies = async (userId, count = 4) => {
+  // Get remedies marked as "not helpful" by this user
+  const notHelpful = await Remedy.find({
+    userId,
+    worked: false,
+  }).select("remedyText");
+
+  const notHelpfulTexts = new Set(notHelpful.map((r) => r.remedyText));
+
+  // Filter out "not helpful" remedies
+  const availableRemedies = PREDEFINED_REMEDIES.filter(
+    (remedy) => !notHelpfulTexts.has(remedy)
+  );
+
+  // If not enough available, use all available
+  const actualCount = Math.min(count, availableRemedies.length);
+
+  // Shuffle and select
+  const shuffled = availableRemedies.sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, actualCount);
+};
+
 const buildMonthRange = (monthParam) => {
   const now = new Date();
-  const [rawYear, rawMonth] = (
-    monthParam ||
-    `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`
-  ).split("-");
 
+  let monthStr = monthParam;
+
+  // Accept "YYYY-MM", "YYYY-MM-DD" or Date
+  if (monthStr instanceof Date) {
+    const y = monthStr.getFullYear();
+    const m = String(monthStr.getMonth() + 1).padStart(2, "0");
+    monthStr = `${y}-${m}`;
+  } else if (typeof monthStr === "string") {
+    // If "YYYY-MM-DD", trim to "YYYY-MM"
+    if (/^\d{4}-\d{2}-\d{2}/.test(monthStr)) {
+      monthStr = monthStr.slice(0, 7);
+    }
+  }
+
+  if (!monthStr || !/^\d{4}-\d{2}$/.test(monthStr)) {
+    monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}`;
+  }
+
+  const [rawYear, rawMonth] = monthStr.split("-");
   const year = Number(rawYear);
   const monthIndex = Number(rawMonth) - 1;
 
@@ -204,21 +272,11 @@ const generateMonthlyRemedySet = async ({
   summary,
   emotionLabels,
 }) => {
-  const prompt = `Based on these monthly journal summaries containing negative emotions, generate 2–3 short, achievable, and supportive remedies for the user. Keep them personal, compassionate, and non-clinical. Avoid generic advice and focus on gentle, doable actions.
+  // Select 3-4 random remedies from predefined list
+  const selectedRemedies = await selectRandomRemedies(userId, 3);
 
-Summary: ${summary}
-Negative emotions observed: ${emotionLabels.join(", ")}
-
-Return each remedy on its own line.`;
-
-  const llamResponse = await callLlama(prompt, {
-    max_tokens: 500,
-    temperature: 0.5,
-  });
-  const suggestions = parseSuggestions(llamResponse, 3);
-
-  if (!suggestions.length) {
-    throw new Error("Model returned no remedies");
+  if (!selectedRemedies.length) {
+    throw new Error("No remedies available");
   }
 
   const primaryEmotion = emotionLabels[0] || "general";
@@ -226,12 +284,18 @@ Return each remedy on its own line.`;
     userId,
     monthKey,
     emotionLabel: primaryEmotion,
-    suggestions,
+    suggestions: selectedRemedies,
   });
 };
 
+// ---------- Controllers ----------
+
 const getMonthlyRemedies = async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { month } = req.query;
     const userId = req.user.id;
 
@@ -262,13 +326,17 @@ const getMonthlyRemedies = async (req, res) => {
       remedies: filteredRemedies,
     });
   } catch (error) {
-    console.error("Error fetching monthly remedies:", error.message);
+    console.error("Error fetching monthly remedies:", error);
     res.status(500).json({ message: "Failed to fetch monthly remedies" });
   }
 };
 
 const generateMonthlyRemedies = async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { month } = req.body;
     const userId = req.user.id;
 
@@ -317,7 +385,7 @@ const generateMonthlyRemedies = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.error("Error generating monthly remedies:", error.message);
+    console.error("Error generating monthly remedies:", error);
     res.status(500).json({ message: "Failed to generate remedies" });
   }
 };
@@ -347,12 +415,24 @@ const createReplacementRemedy = async ({ userId, month, emotion }) => {
 
 const submitFeedback = async (req, res) => {
   try {
-    const { remedyId, feedback, worked, month } = req.body;
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
+    let { remedyId, feedback, worked, month } = req.body;
 
     if (!remedyId) {
       return res
         .status(400)
         .json({ message: "remedyId is required for feedback" });
+    }
+
+    // Normalize worked: allow "true"/"false" strings from frontend
+    if (typeof worked === "string") {
+      const lower = worked.toLowerCase();
+      if (lower === "true") worked = true;
+      else if (lower === "false") worked = false;
+      else worked = undefined;
     }
 
     const remedy = await Remedy.findOne({
@@ -373,15 +453,6 @@ const submitFeedback = async (req, res) => {
 
     await remedy.save();
 
-    let replacement = null;
-    if (worked === false) {
-      replacement = await createReplacementRemedy({
-        userId: req.user.id,
-        month: month || remedy.month,
-        emotion: remedy.emotion,
-      });
-    }
-
     res.status(200).json({
       remedy: {
         id: remedy._id,
@@ -390,19 +461,10 @@ const submitFeedback = async (req, res) => {
         worked: remedy.worked,
         createdAt: remedy.createdAt,
       },
-      replacement: replacement
-        ? {
-            id: replacement._id,
-            emotion: replacement.emotion,
-            text: replacement.remedyText,
-            worked: replacement.worked,
-            createdAt: replacement.createdAt,
-          }
-        : null,
     });
   } catch (error) {
-    console.error("Error submitting feedback:", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error submitting feedback:", error);
+    res.status(500).json({ message: error.message || "Feedback failed" });
   }
 };
 
@@ -411,24 +473,21 @@ const createRemedySuggestion = async ({ userId, journalId, emotion }) => {
     throw new Error("Emotion is required to generate a remedy");
   }
 
-  const prompt = `You are an empathetic wellness assistant. Generate 5 short and simple comforting remedies (1–2 lines each) for someone feeling ${emotion}.
-Avoid long paragraphs or intros—just direct, calming suggestions.
-Use a warm, caring tone. Each suggestion should be practical and actionable.
-Example format:
-- Take a deep breath and let your shoulders relax.
-- Step outside for a moment of fresh air.`;
+  // Select 3-4 random remedies from predefined list
+  const selectedRemedies = await selectRandomRemedies(userId, 4);
 
-  const suggestedRemedy = await callLlama(prompt, { max_tokens: 400 });
-
-  if (!suggestedRemedy) {
-    throw new Error("Remedy generation failed: empty response from model");
+  if (!selectedRemedies.length) {
+    throw new Error("No remedies available");
   }
+
+  // Combine selected remedies into a single text string
+  const remedyText = selectedRemedies.join("\n");
 
   const remedy = new Remedy({
     journalId,
     userId,
     emotion,
-    remedyText: suggestedRemedy,
+    remedyText,
   });
 
   return remedy.save();
@@ -436,6 +495,10 @@ Example format:
 
 const generateRemedy = async (req, res) => {
   try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ message: "User not authenticated" });
+    }
+
     const { journalId, emotion } = req.body;
 
     if (!emotion) {
@@ -450,8 +513,8 @@ const generateRemedy = async (req, res) => {
 
     res.status(201).json(remedy);
   } catch (error) {
-    console.error("Error generating remedy:", error.message);
-    res.status(500).json({ message: error.message });
+    console.error("Error generating remedy:", error);
+    res.status(500).json({ message: error.message || "Failed to generate" });
   }
 };
 
@@ -462,4 +525,3 @@ module.exports = {
   getMonthlyRemedies,
   generateMonthlyRemedies,
 };
-
