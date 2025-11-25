@@ -391,26 +391,21 @@ const generateMonthlyRemedies = async (req, res) => {
 };
 
 const createReplacementRemedy = async ({ userId, month, emotion }) => {
-  const context = await getMonthlyContext(userId, month, {
-    includeSummary: true,
-    targetEmotions: [emotion],
-  });
+  // Select a single remedy (excluding any the user already marked not helpful)
+  const selected = await selectRandomRemedies(userId, 1);
+  if (!selected || !selected.length) return null;
 
-  if (!context.hasNegative) {
-    return null;
-  }
-
-  const summaryText =
-    context.summary || (await buildMonthlySummary(context.negativeEntries));
-
-  const created = await generateMonthlyRemedySet({
+  const remedyText = selected[0];
+  const doc = new Remedy({
+    journalId: null,
     userId,
-    monthKey: context.range.monthKey,
-    summary: summaryText,
-    emotionLabels: [emotion],
+    emotion: emotion || "general",
+    remedyText,
+    month: month || null,
+    worked: null,
   });
 
-  return created[0] || null;
+  return doc.save();
 };
 
 const submitFeedback = async (req, res) => {
@@ -453,6 +448,20 @@ const submitFeedback = async (req, res) => {
 
     await remedy.save();
 
+    let replacement = null;
+    if (worked === false) {
+      try {
+        const monthToUse = month || remedy.month || null;
+        replacement = await createReplacementRemedy({
+          userId: req.user.id,
+          month: monthToUse,
+          emotion: remedy.emotion,
+        });
+      } catch (err) {
+        console.error("Error creating replacement remedy:", err);
+      }
+    }
+
     res.status(200).json({
       remedy: {
         id: remedy._id,
@@ -461,6 +470,15 @@ const submitFeedback = async (req, res) => {
         worked: remedy.worked,
         createdAt: remedy.createdAt,
       },
+      replacement: replacement
+        ? {
+            id: replacement._id,
+            emotion: replacement.emotion,
+            text: replacement.remedyText,
+            worked: replacement.worked,
+            createdAt: replacement.createdAt,
+          }
+        : null,
     });
   } catch (error) {
     console.error("Error submitting feedback:", error);

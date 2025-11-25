@@ -101,9 +101,9 @@ const MonthlyRemedies = ({ month }) => {
   if (!month) return null;
   if (loading) {
     return (
-      <div style={cardStyle()}>
-        <h3 style={{ marginTop: 0 }}>Monthly Remedies</h3>
-        <p style={{ color: "var(--text-secondary)" }}>Loading...</p>
+      <div>
+        <h3 style={{ marginTop: 0, marginBottom: "8px", fontSize: "1.1rem" }}>Monthly Remedies</h3>
+        <p style={{ color: "var(--text-secondary)", margin: 0 }}>Loading...</p>
       </div>
     );
   }
@@ -115,19 +115,28 @@ const MonthlyRemedies = ({ month }) => {
   const canGenerate =
     !data.remedies?.length || data.remedies.every((r) => r.worked === null);
 
+  /* 
+    LAYOUT IMPROVEMENTS FOR MonthlyRemedies:
+    - Removed outer cardStyle wrapper (now in ProfilePage.js container)
+    - Improved internal spacing: header, emotions section, remedies list
+    - Remedies list has max-height with scroll to prevent layout sprawl
+  */
+
   return (
-    <div style={cardStyle()}>
+    <div>
+      {/* Header Section: Title and Generate Button */}
       <div
         style={{
           display: "flex",
           justifyContent: "space-between",
-          alignItems: "center",
+          alignItems: "flex-start",
           gap: "12px",
+          marginBottom: "16px",
         }}
       >
-        <div>
-          <h3 style={{ margin: 0 }}>Monthly Remedies</h3>
-          <p style={{ margin: 0, color: "var(--text-secondary)" }}>
+        <div style={{ flex: 1 }}>
+          <h3 style={{ margin: 0, marginBottom: "4px", fontSize: "1.1rem" }}>Monthly Remedies</h3>
+          <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem" }}>
             Based on {data.month} emotional trends
           </p>
         </div>
@@ -138,6 +147,8 @@ const MonthlyRemedies = ({ month }) => {
             color: "#fff",
             opacity: generating ? 0.6 : 1,
             cursor: generating ? "not-allowed" : "pointer",
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
           disabled={generating}
           onClick={handleGenerate}
@@ -146,32 +157,35 @@ const MonthlyRemedies = ({ month }) => {
         </button>
       </div>
 
+      {/* Error Message Section */}
       {error && (
         <div
           style={{
-            marginTop: 12,
+            marginBottom: "16px",
             padding: "10px 12px",
             borderRadius: "8px",
             background: "rgba(239, 68, 68, 0.1)",
             color: "#ef4444",
+            fontSize: "0.9rem",
           }}
         >
           {error}
         </div>
       )}
 
-      <div style={{ marginTop: 16 }}>
-        <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+      {/* Emotions Section: Key negative emotions as chips */}
+      <div style={{ marginBottom: "16px" }}>
+        <div style={{ fontSize: "0.9rem", color: "var(--text-secondary)", marginBottom: "8px" }}>
           Key negative emotions this month:
         </div>
-        <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
           {negativeEmotionLabels.map((emotion) => (
             <span
               key={emotion.label}
               style={{
                 border: "1px solid var(--border-color)",
                 borderRadius: "999px",
-                padding: "4px 10px",
+                padding: "6px 12px",
                 fontSize: "0.85rem",
                 background: "var(--bg-primary)",
               }}
@@ -183,7 +197,8 @@ const MonthlyRemedies = ({ month }) => {
         </div>
       </div>
 
-      <div style={{ marginTop: 16, position: "relative" }}>
+      {/* Remedies List Section: Scrollable container */}
+      <div style={{ position: "relative" }}>
         {refreshing && (
           <div
             style={{
@@ -192,24 +207,34 @@ const MonthlyRemedies = ({ month }) => {
               right: 0,
               fontSize: "0.8rem",
               color: "var(--text-secondary)",
+              zIndex: 1,
             }}
           >
             Updating…
           </div>
         )}
         {data.remedies?.length ? (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              maxHeight: "400px",
+              overflowY: "auto",
+              paddingRight: "8px",
+            }}
+          >
             {data.remedies.map((remedy) => (
               <div
                 key={remedy.id}
                 style={{
                   border: "1px solid var(--border-color)",
-                  borderRadius: "12px",
-                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  padding: "12px",
                   background: "var(--bg-primary)",
                 }}
               >
-                <div style={{ fontWeight: 500, marginBottom: 6 }}>
+                <div style={{ fontWeight: 500, marginBottom: "8px", fontSize: "0.95rem" }}>
                   {remedy.text}
                 </div>
                 <div

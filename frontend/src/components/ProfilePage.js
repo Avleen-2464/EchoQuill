@@ -99,7 +99,16 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
-          <div style={{ gridColumn: '1 / -1' }}>
+          {/* MonthlyRemedies container - now in right column only, aligned under Analytics */}
+          <div style={{ 
+            gridColumn: '2 / 3',
+            alignSelf: 'flex-start',
+            backgroundColor: 'var(--bg-secondary)',
+            borderRadius: '12px',
+            boxShadow: '0 4px 6px var(--shadow-color)',
+            border: '1px solid var(--border-color)',
+            padding: '16px',
+          }}>
             <MonthlyRemedies month={selectedMonth} />
           </div>
           <div className="journal-section" style={{
