@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = sessionStorage.getItem('token');
     const savedUser = sessionStorage.getItem('user');
-    if (token && savedUser) {
+    if (token != undefined && savedUser != undefined) {
       setUser(JSON.parse(savedUser));
     }
     setLoading(false);
