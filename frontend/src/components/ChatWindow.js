@@ -31,7 +31,7 @@ const ChatWindow = ({ theme, userGender }) => {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/journals/generate-from-chat",
+        `${process.env.REACT_APP_API_URL}/journals/generate-from-chat`,
         {
           conversationHistory: conversationHistory,
         },
@@ -75,7 +75,7 @@ const ChatWindow = ({ theme, userGender }) => {
     try {
       const token = localStorage.getItem("token");
       const response = await axios.post(
-        "http://localhost:5000/api/chat",
+        `${process.env.REACT_APP_API_URL}/chat`,
         {
           message: textToSend,
           conversationHistory: conversationHistory,
@@ -147,7 +147,7 @@ const ChatWindow = ({ theme, userGender }) => {
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(
-          "http://localhost:5000/api/chat/history",
+          `${process.env.REACT_APP_API_URL}/chat/history`,
           {
             headers: { "x-auth-token": token },
           }

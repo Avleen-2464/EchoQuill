@@ -66,7 +66,9 @@ const ProfilePage = () => {
             borderRadius: '12px',
             boxShadow: '0 4px 6px var(--shadow-color)',
             padding: '16px',
-            border: '1px solid var(--border-color)'
+            border: '1px solid var(--border-color)',
+            minWidth: 0,
+            overflow: 'hidden',
           }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: '8px' }}>
               <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Emotional Analytics</h3>
@@ -89,12 +91,13 @@ const ProfilePage = () => {
             <div style={{
               display: 'grid',
               gridTemplateColumns: '1fr 1fr',
-              gap: '16px'
+              gap: '16px',
+              minWidth: 0,
             }}>
-              <div style={{ height: '420px' }}>
+              <div style={{ height: '420px', minWidth: 0, overflow: 'hidden' }}>
                 <MoodTrendsChart />
               </div>
-              <div style={{ height: '420px' }}>
+              <div style={{ height: '420px', minWidth: 0, overflow: 'hidden' }}>
                 <EmotionPieChart month={selectedMonth} />
               </div>
             </div>

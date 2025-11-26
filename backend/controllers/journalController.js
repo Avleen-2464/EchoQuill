@@ -90,8 +90,9 @@ exports.generateFromChat = async (req, res) => {
     // ---------- LLM PART (SUMMARY + DIARY) ----------
     console.log("🤖 Calling LLM for summary…");
 
+    const ollamaUrl = process.env.OLLAMA_URL || "http://localhost:11434/api/generate";
     const summaryResponse = await axios.post(
-      "http://localhost:11434/api/generate",
+      ollamaUrl,
       {
         model: "llama3",
         prompt: `Based on the following conversation, write summary bullet points:\n\n${rawConversation}`,
@@ -121,7 +122,7 @@ exports.generateFromChat = async (req, res) => {
     console.log("📔 Calling LLM for final diary entry…");
 
     const finalJournalResponse = await axios.post(
-      "http://localhost:11434/api/generate",
+      ollamaUrl,
       {
         model: "llama3",
         prompt: `You are writing a private diary entry at the end of the day. Use the following personal notes to reflect emotionally and naturally. Do not mention chat, AI, or conversations. Write in first person, starting with "Dear Diary" and ending with a warm, human sign-off like "Until tomorrow" or "Yours truly".\n\nPersonal Notes:\n${summaryBulletPoints}`,
@@ -169,8 +170,9 @@ exports.generateFromChat = async (req, res) => {
 
     let emotionResponse;
     try {
+      const emotionApiUrl = process.env.EMOTION_API_URL || "http://localhost:5001/api/predict";
       emotionResponse = await axios.post(
-        "http://localhost:5001/api/predict",
+        emotionApiUrl,
         { text: safeText }
       );
     } catch (emotionErr) {

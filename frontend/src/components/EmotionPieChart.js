@@ -18,7 +18,7 @@ const EmotionPieChart = ({ month }) => {
       try {
         const token = localStorage.getItem('token');
         const params = month ? `?month=${encodeURIComponent(month)}` : '';
-        const res = await fetch(`http://localhost:5000/api/journals/emotion-distribution${params}` , {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/journals/emotion-distribution${params}` , {
           headers: { 'Content-Type': 'application/json', 'x-auth-token': token }
         });
         if (!res.ok) throw new Error('Failed to load');
@@ -69,13 +69,24 @@ const EmotionPieChart = ({ month }) => {
     <div style={{
       width: '100%',
       height: '100%',
+      maxWidth: '100%',
       background: 'var(--bg-primary)',
       border: '1px solid var(--border-color)',
       borderRadius: '12px',
       boxShadow: '0 2px 8px var(--shadow-color)',
-      padding: '12px'
+      padding: '12px',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
     }}>
-      <Pie data={chartData} options={options} />
+      <div style={{ 
+        flex: 1, 
+        minHeight: 0,
+        width: '100%',
+        maxWidth: '100%',
+      }}>
+        <Pie data={chartData} options={options} />
+      </div>
     </div>
   );
 };

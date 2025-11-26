@@ -1,4 +1,4 @@
-const API_BASE = process.env.REACT_APP_API_URL || "http://localhost:5000/api/remedy";
+const API_BASE = process.env.REACT_APP_API_URL ? `${process.env.REACT_APP_API_URL}/remedy` : "http://localhost:5000/api/remedy";
 
 const authHeaders = () => {
   const token = localStorage.getItem("token");

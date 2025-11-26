@@ -21,7 +21,7 @@ const Login = () => {
   useEffect(() => {
     const checkServer = async () => {
       try {
-        await axios.get('http://localhost:5000/api/auth/test');
+        await axios.get(`${process.env.REACT_APP_API_URL}/auth/test`);
         setServerStatus('running');
       } catch (err) {
         setServerStatus('not-running');
@@ -41,7 +41,7 @@ const Login = () => {
     try {
       console.log('Attempting login with:', { email });
       
-      const res = await axios.post('http://localhost:5000/api/auth/login', formData);
+      const res = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, formData);
       
       console.log('Login response:', res.data);
       
@@ -73,7 +73,7 @@ const Login = () => {
           <div className="auth-error">
             <p>Server Connection Error</p>
             <p className="error-help">
-              Please make sure the backend server is running at http://localhost:5000
+              Please make sure the backend server is running at {process.env.REACT_APP_API_URL || 'http://localhost:5000/api'}
             </p>
           </div>
         )}

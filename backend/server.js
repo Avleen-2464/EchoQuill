@@ -84,7 +84,8 @@ const startOllama = () => {
 // Check if Ollama is running properly
 const checkOllama = async () => {
   try {
-    const response = await axios.get("http://localhost:11434/api/tags");
+    const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
+    const response = await axios.get(`${ollamaBaseUrl}/api/tags`);
     if (response.status === 200) {
       console.log("✅ Ollama is already running.");
     }

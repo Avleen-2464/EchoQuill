@@ -25,7 +25,7 @@ const Journal = () => {
     setError(null);
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.get("http://localhost:5000/api/journals", {
+      const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/journals`, {
         headers: { "x-auth-token": token },
       });
       setEntries(data);

@@ -35,7 +35,8 @@ const generateJournals = async () => {
                 ).join('\n');
 
                 // Generate journal entry using Llama
-                const response = await fetch('http://localhost:11434/api/generate', {
+                const ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434/api/generate';
+                const response = await fetch(ollamaUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

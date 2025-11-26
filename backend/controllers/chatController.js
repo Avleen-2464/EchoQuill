@@ -10,8 +10,9 @@ const handleChat = async (req, res) => {
   }
 
   try {
+    const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
     // Check if Ollama service is running
-    await axios.get("http://localhost:11434/api/tags");
+    await axios.get(`${ollamaBaseUrl}/api/tags`);
 
     // 🧠 System / style instructions for the bot
     const SYSTEM_PROMPT = `
@@ -42,7 +43,7 @@ Just understand, don’t lecture.
       `User: ${userMessage}\nAssistant:`;
 
     // Send the message to Ollama for response
-    const response = await axios.post("http://localhost:11434/api/generate", {
+    const response = await axios.post(`${ollamaBaseUrl}/api/generate`, {
       model: "llama3",
       prompt,
       stream: false,
