@@ -7,12 +7,23 @@ require('dotenv').config();
 
 const app = express();
 
-// CORS configuration
+// CORS configuration (static defaults + FRONTEND_URL if provided)
+const defaultOriginsArr = ['http://localhost:3000', 'https://echoquill.fun', 'http://echoquill.fun'];
+const frontendUrl = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.trim() : null;
+const allowedOrigins = Array.from(new Set([...(frontendUrl ? [frontendUrl] : []), ...defaultOriginsArr]));
+
 app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'x-auth-token']
+  origin: function(origin, callback) {
+    // allow requests with no origin (e.g., curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS not allowed'), false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-auth-token']
 }));
 
 // Middleware

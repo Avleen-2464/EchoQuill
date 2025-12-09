@@ -44,7 +44,7 @@ Just understand, don’t lecture.
 
     // Send the message to Ollama for response
     const response = await axios.post(`${ollamaBaseUrl}/api/generate`, {
-      model: "llama3",
+      model: "llama3.2-friend",
       prompt,
       stream: false,
       options: {
